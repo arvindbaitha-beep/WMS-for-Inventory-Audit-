@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stock Audit WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4E5DF; --panel:#FAFAF8; --panel-2:#EFEFEA; --panel-3:#E6E7E1;
+  --ink:#0E1110; --ink-2:#555A56; --ink-3:#868B85;
+  --rule:#C6C8C0; --hard:#0E1110;
+  --hv:#F2C200; --hv-ink:#0E1110;
+  --ok:#17683F; --ok-bg:#DDECE2; --ok-line:#2E9160;
+  --warn:#9C5A05; --warn-bg:#F6E7CB; --warn-line:#D08A19;
+  --bad:#A92A1E; --bad-bg:#F6DCD8; --bad-line:#D0483A;
+  --info:#1C4E8A; --info-bg:#DCE6F1; --info-line:#3C77BF;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"Manrope",var(--sans);
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --side:236px;
+  --c1:#4F46E5; --c2:#0D9488; --c3:#D97706; --c4:#0284C7;
+  --c5:#7C3AED; --c6:#DB2777; --c7:#059669; --c8:#DC2626; --c9:#0891B2;
+  box-sizing:border-box; color-scheme:light dark;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#101315; --panel:#191D20; --panel-2:#212629; --panel-3:#2A3034;
+  --ink:#EDEFEA; --ink-2:#A4AAA4; --ink-3:#7B817B;
+  --rule:#333A3E; --hard:#4E575C;
+  --ok:#74D29E; --ok-bg:#15301F; --ok-line:#3F9E68;
+  --warn:#E8AD52; --warn-bg:#33260F; --warn-line:#B27E24;
+  --bad:#F2887A; --bad-bg:#371814; --bad-line:#B8503F;
+  --info:#93B9E9; --info-bg:#152439; --info-line:#4A7EC0;
+  --c1:#8B85FF; --c2:#3FC7B4; --c3:#F0A93C; --c4:#4FB0EC;
+  --c5:#B18CFF; --c6:#F472B6; --c7:#41C98E; --c8:#F4776A; --c9:#38BBD9;
+}}
+:root[data-theme="dark"]{
+  --paper:#101315; --panel:#191D20; --panel-2:#212629; --panel-3:#2A3034;
+  --ink:#EDEFEA; --ink-2:#A4AAA4; --ink-3:#7B817B;
+  --rule:#333A3E; --hard:#4E575C;
+  --ok:#74D29E; --ok-bg:#15301F; --ok-line:#3F9E68;
+  --warn:#E8AD52; --warn-bg:#33260F; --warn-line:#B27E24;
+  --bad:#F2887A; --bad-bg:#371814; --bad-line:#B8503F;
+  --info:#93B9E9; --info-bg:#152439; --info-line:#4A7EC0;
+  --c1:#8B85FF; --c2:#3FC7B4; --c3:#F0A93C; --c4:#4FB0EC;
+  --c5:#B18CFF; --c6:#F472B6; --c7:#41C98E; --c8:#F4776A; --c9:#38BBD9;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;-webkit-text-size-adjust:100%;scroll-padding-top:90px}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body,button,input,select,textarea{font-feature-settings:"cv02","cv03","cv04","cv11";letter-spacing:-.005em}
+h1,h2,h3,h4,.logo b,.nb,.bkc .k,.mode-banner strong,.scan-count{letter-spacing:-.02em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--hv);outline-offset:1px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.top{position:sticky;top:0;z-index:60;color:#EDEFEA;
+  background:linear-gradient(100deg,#0E1110 0%,#152733 38%,#221A3A 72%,#2A1730 100%);
+  padding:calc(9px + env(safe-area-inset-top,0px)) 16px 9px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--hv)}
+.logo{display:flex;align-items:center;gap:9px}
+.logo svg{display:block}
+.logo b{font-family:var(--cond);font-weight:700;font-size:21px;letter-spacing:.02em;line-height:1}
+.logo i{font-style:normal;font-family:var(--mono);font-size:10px;color:#9AA09A;display:block;letter-spacing:.06em}
+.top .sp{flex:1}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:2px;
+  background:rgba(255,255,255,.1);color:#C6CAC4;white-space:nowrap}
+.chip.live{background:var(--hv);color:#0E1110;font-weight:600}
+.who{display:flex;align-items:center;gap:8px;font-family:var(--cond);font-weight:600;font-size:15px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--hv);color:#0E1110;
+  display:grid;place-items:center;font-family:var(--cond);font-weight:700;font-size:14px}
+.ib{background:none;border:1px solid rgba(255,255,255,.22);color:inherit;border-radius:3px;
+  padding:4px 9px;cursor:pointer;font-size:13px;font-family:var(--cond);font-weight:600}
+.ib:hover{background:rgba(255,255,255,.1)}
+
+.shell{display:flex;align-items:flex-start;max-width:1560px;margin:0 auto}
+aside{width:var(--side);flex:0 0 var(--side);position:sticky;top:64px;
+  padding:16px 10px;max-height:calc(100vh - 64px);overflow-y:auto}
+.navgrp{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.09em;
+  color:var(--ink-3);padding:12px 10px 5px}
+.nb{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel);border:1px solid var(--rule);border-left:4px solid transparent;
+  border-radius:3px;padding:8px 11px;margin-bottom:6px;
+  font-family:var(--cond);font-weight:600;font-size:17px;color:var(--ink-2)}
+.nb:hover{background:var(--panel-2);color:var(--ink);border-left-color:var(--acc)}
+.nb[aria-current="true"]{background:var(--ink);color:#F5F6F2;border-color:var(--ink);border-left-color:var(--acc)}
+.nb .ic{width:25px;height:25px;flex:0 0 25px;display:grid;place-items:center;border-radius:6px;
+  background:var(--acc);color:#fff;font-size:13px;line-height:1}
+.nb .bdg{margin-left:auto;font-family:var(--mono);font-size:11px;background:var(--panel-3);
+  color:var(--ink-2);padding:1px 6px;border-radius:9px}
+.nb[aria-current="true"] .bdg{background:var(--hv);color:#0E1110;font-weight:600}
+main{flex:1;min-width:0;padding:18px 16px 90px}
+
+@media (max-width:920px){
+  .shell{display:block}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:none;z-index:55;
+    display:flex;gap:6px;overflow-x:auto;background:var(--panel);border-top:2px solid var(--hard);
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));scrollbar-width:none}
+  aside::-webkit-scrollbar{display:none}
+  .navgrp{display:none}
+  .nb{width:auto;flex:0 0 auto;margin:0;font-size:15px;padding:7px 12px;border-left-width:1px;border-bottom:3px solid transparent}
+  .nb[aria-current="true"]{border-bottom-color:var(--hv)}
+  .nb .bdg{margin-left:6px}
+  main{padding:14px 11px 108px}
+}
+
+h2{font-family:var(--cond);font-weight:700;font-size:29px;margin:0 0 3px;letter-spacing:.01em}
+h3{font-family:var(--cond);font-weight:700;font-size:20px;margin:0 0 9px}
+h4{font-family:var(--cond);font-weight:600;font-size:16px;margin:0 0 7px;color:var(--ink-2);letter-spacing:.03em}
+.sub{color:var(--ink-2);margin:0 0 18px;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:16px;margin-bottom:16px}
+.card > h3:first-child{margin-top:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:980px){.split{grid-template-columns:1fr}}
+
+label.f{display:block;min-width:0}
+label.f>span{display:block;font-family:var(--cond);font-weight:600;font-size:13px;
+  color:var(--ink-2);margin-bottom:3px;letter-spacing:.04em}
+input,select,textarea{width:100%;background:var(--panel);border:1px solid var(--hard);
+  border-radius:2px;padding:8px 9px;font-family:var(--mono);font-size:14px}
+textarea{font-size:13px;line-height:1.5;resize:vertical}
+input:disabled,input[readonly]{background:var(--panel-3);color:var(--ink-2);border-color:var(--rule)}
+input.big{font-size:19px;padding:11px;font-weight:500}
+.ro{font-family:var(--cond);font-weight:700;font-size:20px;text-align:center;
+  padding:6px 4px;border:1px solid var(--rule);border-radius:2px;background:var(--panel-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.ro.ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}
+.ro.warn{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}
+.ro.bad{color:var(--bad);background:var(--bad-bg);border-color:var(--bad-line)}
+.ro.info{color:var(--info);background:var(--info-bg);border-color:var(--info-line)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:2px;
+  padding:9px 15px;cursor:pointer;font-family:var(--cond);font-weight:600;font-size:17px;letter-spacing:.02em}
+.btn:hover{filter:brightness(1.25)}
+.btn.hv{background:var(--hv);color:var(--hv-ink);border-color:var(--hv)}
+.btn.hv:hover{filter:brightness(1.07)}
+.btn.ok{background:var(--ok-line);border-color:var(--ok-line);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hard)}
+.btn.ghost:hover{background:var(--panel-2);filter:none}
+.btn.sm{padding:4px 9px;font-size:14px}
+.btn.xs{padding:2px 7px;font-size:13px}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.btn.block{width:100%}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--cond);font-weight:600;font-size:12.5px;letter-spacing:.05em;text-align:left;
+  color:var(--ink-2);padding:7px 9px;border-bottom:2px solid var(--hard);white-space:nowrap;
+  background:var(--panel-2);position:sticky;top:0;z-index:2}
+td{padding:6px 9px;border-bottom:1px solid var(--rule);vertical-align:middle}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover{background:var(--panel-2)}
+tr.edit-on{background:var(--warn-bg)!important;box-shadow:inset 3px 0 0 var(--warn-line)}
+.scroll{overflow:auto;-webkit-overflow-scrolling:touch}
+.scroll.cap{max-height:460px}
+.code{font-family:var(--mono);font-size:13px}
+.muted{color:var(--ink-3)}
+.nowrap{white-space:nowrap}
+
+.tag{display:inline-block;font-family:var(--cond);font-weight:600;font-size:12.5px;
+  padding:1px 7px;border-radius:2px;letter-spacing:.03em;white-space:nowrap;border:1px solid transparent}
+.tag.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
+.tag.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.tag.bad{background:var(--bad-bg);color:var(--bad);border-color:var(--bad-line)}
+.tag.info{background:var(--info-bg);color:var(--info);border-color:var(--info-line)}
+.tag.idle{background:var(--panel-3);color:var(--ink-2);border-color:var(--rule)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;margin-bottom:16px}
+.tile{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--rule)}
+.tile.g::before{background:var(--ok-line)} .tile.y::before{background:var(--hv)}
+.tile.r::before{background:var(--bad-line)} .tile.b::before{background:var(--info-line)}
+.tile.g{background:linear-gradient(135deg,var(--ok-bg) 0%,var(--panel) 62%)}
+.tile.y{background:linear-gradient(135deg,var(--warn-bg) 0%,var(--panel) 62%)}
+.tile.r{background:linear-gradient(135deg,var(--bad-bg) 0%,var(--panel) 62%)}
+.tile.b{background:linear-gradient(135deg,var(--info-bg) 0%,var(--panel) 62%)}
+.tile .k{font-family:var(--cond);font-weight:600;font-size:12.5px;letter-spacing:.05em;color:var(--ink-2)}
+.tile .v{font-family:var(--cond);font-weight:700;font-size:33px;line-height:1.02;
+  font-variant-numeric:tabular-nums;margin-top:2px;word-break:break-word}
+.tile .v small{font-size:16px;font-weight:600;color:var(--ink-2)}
+.tile .d{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:3px}
+
+.bar{height:8px;background:var(--panel-3);border-radius:9px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--ink)}
+.bar>i.ok{background:var(--ok-line)}.bar>i.warn{background:var(--warn-line)}
+.bar>i.bad{background:var(--bad-line)}.bar>i.info{background:var(--info-line)}
+
+.empty{border:2px dashed var(--hard);border-radius:4px;padding:36px 22px;text-align:center;color:var(--ink-2)}
+.empty h3{color:var(--ink)}
+.hint{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:5px;min-height:1.1em}
+.hint.bad{color:var(--bad)}.hint.ok{color:var(--ok)}.hint.warn{color:var(--warn)}
+.banner{border-left:4px solid var(--info-line);background:var(--info-bg);color:var(--info);
+  padding:10px 13px;border-radius:3px;margin-bottom:14px;font-size:14px}
+.banner.w{border-color:var(--warn-line);background:var(--warn-bg);color:var(--warn)}
+
+.oner{display:grid;gap:8px;align-items:end;
+  grid-template-columns:1.1fr 1.5fr 1.05fr 1.15fr 1.15fr .72fr .72fr .72fr .68fr auto}
+@media(max-width:1280px){.oner{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:700px){.oner{grid-template-columns:repeat(2,1fr)}.oner .wide{grid-column:span 2}}
+.seg{display:inline-flex;border:1px solid var(--hard);border-radius:2px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:var(--panel);border:0;border-right:1px solid var(--rule);padding:6px 12px;
+  cursor:pointer;font-family:var(--cond);font-weight:600;font-size:15px;color:var(--ink-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+
+.shelves{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:10px}
+.shcard{text-align:left;width:100%;cursor:pointer;background:var(--panel);
+  border:1px solid var(--rule);border-left:6px solid var(--ink-3);border-radius:4px;padding:11px 13px}
+.shcard:hover{border-color:var(--hard);border-left-color:var(--hv)}
+.shcard.done{border-left-color:var(--ok-line);background:var(--ok-bg)}
+.shcard.part{border-left-color:var(--hv)}
+.shcard .id{font-family:var(--cond);font-weight:700;font-size:21px;line-height:1.1;word-break:break-all}
+.shcard .mt{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin:3px 0 7px}
+.shcard .ft{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px}
+
+.bk{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:16px}
+.bkc{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 13px;
+  cursor:pointer;text-align:left;border-top:6px solid var(--rule)}
+.bkc[aria-pressed="true"]{background:var(--panel-2);border-color:var(--hard);box-shadow:0 0 0 2px var(--hv) inset}
+.bkc.ok{background:linear-gradient(160deg,var(--ok-bg),var(--panel) 68%)}
+.bkc.info{background:linear-gradient(160deg,var(--info-bg),var(--panel) 68%)}
+.bkc.warn{background:linear-gradient(160deg,var(--warn-bg),var(--panel) 68%)}
+.bkc.bad{background:linear-gradient(160deg,var(--bad-bg),var(--panel) 68%)}
+.card{border-radius:6px}
+h2{border-bottom:3px solid var(--acc,var(--hv));display:inline-block;padding-bottom:2px}
+.bkc .k{font-family:var(--cond);font-weight:700;font-size:16px}
+.bkc .v{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.bkc .d{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+
+.gate{max-width:390px;margin:8vh auto;padding:0 16px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));
+  z-index:200;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:3px;
+  font-family:var(--cond);font-weight:600;font-size:16px;max-width:92vw;text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.err{background:var(--bad-line);color:#fff}
+.toast.good{background:var(--ok-line);color:#fff}
+@media(min-width:921px){.toast{bottom:22px}}
+details.help{border:1px solid var(--rule);border-radius:4px;padding:0 13px;background:var(--panel);margin-bottom:16px}
+details.help summary{cursor:pointer;padding:11px 0;font-family:var(--cond);font-weight:600;font-size:17px}
+details.help[open]{padding-bottom:13px}
+details.help code{font-family:var(--mono);font-size:12.5px;background:var(--panel-3);padding:1px 4px;border-radius:2px}
+.foot{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding:14px 2px;border-top:1px solid var(--rule);margin-top:24px}
+
+/* Professional category-cycle UI */
+.category-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--rule);border-radius:999px;background:var(--panel-2);font:600 12px var(--cond);letter-spacing:.02em}
+.mode-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:linear-gradient(135deg,var(--panel-2),var(--panel));margin-bottom:10px}
+.mode-banner strong{font:700 16px var(--cond)}
+.scan-focus{border:1px solid var(--hard);box-shadow:0 8px 24px rgba(0,0,0,.08);background:var(--panel);padding:14px;border-radius:9px}
+.scan-focus .scan-input{font-size:24px;height:52px;border-width:2px}
+.scan-count{font:700 34px var(--cond);font-variant-numeric:tabular-nums}
+.category-pills{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.category-pills .pill{padding:5px 9px;border-radius:999px;border:1px solid var(--rule);background:var(--panel-2);font:600 12px var(--cond)}
+.category-pills .pill.active{border-color:var(--hv);box-shadow:0 0 0 2px var(--hv) inset}
+.template-card{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+@media(max-width:700px){.scan-focus .scan-input{font-size:20px}.scan-count{font-size:28px}}
+
+/* Cycle Count WMS compact UI refresh */
+.navgrp{padding:8px 8px 4px;font-size:10px}
+.nb{gap:7px;padding:6px 8px;margin-bottom:4px;font-size:14px;border-radius:5px}
+.nb .ic{width:22px;height:22px;flex-basis:22px;border-radius:5px}
+main{padding:14px 14px 80px}
+h2{font-size:25px}
+.card{padding:12px;margin-bottom:10px;border-radius:7px}
+.tiles{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px;margin-bottom:10px}
+.tile{padding:8px 10px;border-radius:7px}
+.tile::before{width:3px}
+.tile .k{font-size:11px}.tile .v{font-size:26px}.tile .v small{font-size:13px}.tile .d{font-size:10px}
+.bk{grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin-bottom:10px}
+.bkc{padding:8px 10px;border-radius:7px;min-height:82px}
+.bkc .v{font-size:25px}.bkc .k{font-size:11px}.bkc .d{font-size:10px}
+.shelves{grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px}
+.shcard{border-left-width:4px;padding:8px 10px;border-radius:6px}.shcard .id{font-size:17px}.shcard .mt{font-size:10px;margin:2px 0 5px}.shcard .ft{margin-top:5px}
+.btn{padding:7px 11px;font-size:14px;border-radius:5px}.btn.sm{padding:4px 8px;font-size:12px}.btn.xs{padding:2px 6px;font-size:11px}
+.compact-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.report-actions{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 10px}
+.cycle-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--rule);padding:8px 10px;border-radius:7px;margin-bottom:10px}
+.cycle-bar .state{font-family:var(--cond);font-weight:700;font-size:13px}
+@media(max-width:920px){.nb{font-size:12px;padding:6px 8px}.nb .ic{width:20px;height:20px;flex-basis:20px}main{padding:10px 9px 100px}.tiles{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== FINAL ARVIND STOCK AUDIT WMS UI ===== */
+:root{
+  --paper:#f3f7fb; --panel:#ffffff; --panel-2:#f7fafc; --panel-3:#eef3f7;
+  --ink:#13233f; --ink-2:#53627a; --ink-3:#8a97a9; --rule:#dfe7ef; --hard:#c9d5e2;
+  --hv:#0aa6a6; --hv-ink:#fff; --ok:#0b9b65; --ok-bg:#e8f8f1; --ok-line:#0b9b65;
+  --warn:#f59e0b; --warn-bg:#fff5df; --warn-line:#f59e0b; --bad:#e34b4b; --bad-bg:#fff0f0; --bad-line:#e34b4b;
+  --info:#1687d9; --info-bg:#eaf5ff; --info-line:#1687d9;
+  --side:230px; --cond:"Manrope",var(--sans);
+}
+body{background:#f3f7fb;color:var(--ink)}
+.top{position:sticky;top:0;background:#fff;color:var(--ink);border-bottom:1px solid #e2e9f1;padding:10px 20px;min-height:68px;box-shadow:0 2px 12px rgba(21,42,66,.05)}
+.logo{gap:10px}.logo b{font-size:20px;color:#13233f}.logo i{color:#6c7a8f}.logo svg{display:none}
+.logo:before{content:"A";display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0aa6a6,#1687d9);color:#fff;font:800 22px Manrope;box-shadow:0 5px 12px rgba(10,166,166,.2)}
+.chip{background:#f0f5f9;color:#53627a;border:1px solid #dce5ee;border-radius:8px;padding:5px 9px}.chip.live{background:#e9f8f2;color:#0b9b65;border-color:#bde9d5}
+.who{color:#13233f}.av{background:#0b7899;color:#fff}.ib{color:#53627a;border-color:#dce5ee;background:#fff;border-radius:8px}
+.shell{max-width:none;min-height:calc(100vh - 68px)}
+aside{background:#10243f;color:#dbe8f4;position:sticky;top:68px;width:230px;flex-basis:230px;padding:12px 10px;max-height:calc(100vh - 68px);box-shadow:2px 0 10px rgba(17,37,63,.08)}
+.navgrp{color:#91a6bd;padding:12px 12px 6px;font-size:10px;text-transform:uppercase}
+.nb{background:transparent;border:0;border-left:3px solid transparent;color:#dce8f4;border-radius:8px;padding:10px 12px;margin:2px 0;font:600 14px var(--sans)}
+.nb .ic{background:transparent;color:#bcd0e2;width:26px;height:26px}.nb:hover{background:#193654;color:#fff;border-left-color:#21c1c1}.nb[aria-current="true"]{background:#1a8fa6;color:#fff;border-color:#1a8fa6;border-left-color:#7be4dc;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.nb[aria-current="true"] .ic{color:#fff}.nb .bdg{background:#e7a400;color:#fff}
+main{padding:18px 18px 80px;max-width:1400px;margin:0 auto;width:100%}
+h2{font-size:25px;color:#13233f}.sub{color:#68778b;font-size:14px}.card{border:1px solid #e0e8f0;border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(30,58,88,.04);padding:15px;margin-bottom:14px}.card h3{font-size:17px;color:#172844}
+.tiles{grid-template-columns:repeat(6,minmax(145px,1fr));gap:10px}.tile{border:1px solid #e0e8f0;border-radius:11px;background:#fff;padding:12px 13px;box-shadow:0 2px 8px rgba(30,58,88,.03);min-height:92px}.tile::before{display:none}.tile .k{font-family:var(--sans);font-size:12px;color:#68778b;letter-spacing:0}.tile .v{font-family:var(--cond);font-size:26px;color:#13233f;margin-top:6px}.tile .d{font-family:var(--sans);font-size:11px;color:#8a97a9}.tile.g{background:linear-gradient(135deg,#f1fbf7,#fff)}.tile.y{background:linear-gradient(135deg,#fff9ea,#fff)}.tile.b{background:linear-gradient(135deg,#eef7ff,#fff)}.tile.r{background:linear-gradient(135deg,#fff2f2,#fff)}
+.cycle-bar{background:#fff;border:1px solid #e0e8f0;border-radius:10px;padding:9px 12px}.cycle-bar .state{font-family:var(--sans);font-size:13px}
+.btn{font-family:var(--sans);font-size:13px;border-radius:8px;padding:8px 12px;background:#132d4d}.btn.hv{background:#0aa6a6;color:#fff;border-color:#0aa6a6}.btn.ok{background:#0b9b65}.btn.ghost{background:#fff;border-color:#cbd8e5;color:#31435d}
+input,select,textarea{background:#fff;border:1px solid #ccd9e6;border-radius:8px;font-family:var(--sans);padding:9px 10px}.scan-focus{border-color:#cfe1ed;border-radius:12px;background:#fff}.scan-focus .scan-input{font-size:22px;height:56px;border:2px solid #1687d9;border-radius:10px;box-shadow:0 0 0 3px rgba(22,135,217,.08)}
+.mode-banner{background:#f4f9fc;border-color:#dce8f1;border-radius:10px}.mode-banner strong{font:700 15px var(--sans)}.category-badge{font-family:var(--sans);font-size:11px;border-radius:999px;background:#edf6fb}
+.tag{border-radius:999px;padding:3px 8px;font-family:var(--sans);font-size:11px}.help{border-color:#e0e8f0;border-radius:10px}
+.split{gap:12px}.bar{height:7px;background:#e8eef4;border-radius:999px;overflow:hidden}.bar i{border-radius:999px}.foot{color:#8996a7;border-top-color:#e0e8f0;font-family:var(--sans)}
+/* dashboard cards */
+.welcome{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;border-radius:13px;background:linear-gradient(100deg,#e6f5ff,#eef9fb 58%,#eaf3ff);border:1px solid #d5e8f4;margin-bottom:14px;overflow:hidden}.welcome .eyebrow{font-size:13px;color:#1768a0;font-weight:600}.welcome h1{font:800 31px Manrope;margin:2px 0 5px;color:#132d59}.welcome p{margin:0;color:#42617e;font-size:13px}.welcome .welcome-badge{padding:14px 20px;border-radius:12px;background:#fff;border:1px solid #dbe7ef;font-weight:700;color:#18375b;box-shadow:0 4px 15px rgba(40,80,120,.05)}
+.dash-grid{display:grid;grid-template-columns:1.35fr .95fr .85fr;gap:12px}.dash-wide{grid-column:span 2}.category-card{padding:15px}.cat-row{display:grid;grid-template-columns:120px 1fr 50px;gap:12px;align-items:center;margin:13px 0}.cat-row .cat-name{font-weight:700;font-size:13px}.progress{height:8px;border-radius:99px;background:#edf2f6;overflow:hidden}.progress i{display:block;height:100%;border-radius:99px;background:#1687d9}.progress.cos i{background:#0b9b65}.progress.elec i{background:#f59e0b}.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.quick-btn{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #dce7ef;background:#fff;border-radius:9px;cursor:pointer;font-weight:700;color:#23415f}.quick-btn:hover{background:#f3f9fc;border-color:#9bcce6}.quick-btn .qicon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#eaf6fb;color:#1687d9}.report-list{display:grid;gap:7px}.report-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid #e6edf3;border-radius:8px;background:#fbfdff}.report-row .report-name{flex:1;font-size:12px;font-weight:600}.report-row .btn{padding:5px 8px;font-size:11px}.mini-table{width:100%;border-collapse:collapse}.mini-table th{background:#f5f8fb;color:#53627a;font-size:11px;text-align:left;padding:8px}.mini-table td{border-top:1px solid #edf1f5;padding:8px;font-size:11px}.status-pill{padding:3px 7px;border-radius:999px;background:#fff3d9;color:#b56c00;font-size:10px}.sync-ok{padding:10px 12px;border-radius:10px;background:#eaf8f1;border:1px solid #c9ecd9;color:#17734f;font-size:12px}
+@media(max-width:1180px){.tiles{grid-template-columns:repeat(3,1fr)}.dash-grid{grid-template-columns:1fr 1fr}.dash-wide{grid-column:span 2}}
+@media(max-width:920px){.top{padding:8px 10px;min-height:58px}.top .chip{display:none}.shell{display:block}aside{top:auto;bottom:0;width:auto;max-height:none;display:flex;gap:5px;overflow-x:auto;padding:7px 7px calc(7px + env(safe-area-inset-bottom,0px));background:#10243f;border-top:1px solid #294765;z-index:80}.nb{flex:0 0 auto;width:auto;padding:7px 10px;margin:0;font-size:11px}.nb .ic{width:20px;height:20px}.navgrp{display:none}main{padding:10px 9px 100px}.welcome{padding:14px;display:block}.welcome h1{font-size:23px}.welcome .welcome-badge{margin-top:10px;display:inline-block}.tiles{grid-template-columns:repeat(2,1fr);gap:7px}.tile{min-height:80px;padding:10px}.tile .v{font-size:23px}.dash-grid{grid-template-columns:1fr}.dash-wide{grid-column:span 1}.cat-row{grid-template-columns:90px 1fr 42px;gap:7px}.quick-grid{grid-template-columns:1fr 1fr}.scan-focus .scan-input{height:58px;font-size:20px}}
+@media(max-width:480px){.tiles{grid-template-columns:1fr 1fr}.quick-grid{grid-template-columns:1fr}.top .who span:not(.av){display:none}.logo b{font-size:17px}.logo:before{width:32px;height:32px;font-size:18px}.welcome h1{font-size:21px}}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+"use strict";
+const APP="Stock Audit WMS", LS="wms.sc.v2";
+const BRACKETS=[
+  {k:"b60",label:"Above 60%",min:60,max:Infinity,cls:"ok",   note:"Fresh stock"},
+  {k:"b40",label:"40% to 60%",min:40,max:60,     cls:"info", note:"Normal rotation"},
+  {k:"b25",label:"25% to 40%",min:25,max:40,     cls:"warn", note:"Move first"},
+  {k:"b00",label:"Below 25%",min:-Infinity,max:25,cls:"bad", note:"Short life / expired"}
+];
+const bracketOf=p=>BRACKETS.find(b=>p>=b.min&&p<b.max)||BRACKETS[3];
+
+const S={
+  master:[], lines:[], shelfDone:{}, users:[],
+  cfg:{minLifePct:50, job:"", author:"Arvind Kumar", site:"", ccComplete:false, deletedShelves:{},shelfLocks:{}},
+  cloud:{url:"", key:"", auto:true, lastPush:"", lastPull:"", err:""},
+  me:null, view:"dash", activeShelf:null, editId:null,
+  filter:"all", q:"", bkFilter:"all", searchQ:"",
+  booted:false, dirty:{master:false,lines:false,state:false,users:false}
+};
+let DB=null, DL=null;
+const SANDBOX = !!(typeof window!=="undefined" && window.claude && window.claude.use);
+
+const $=s=>document.querySelector(s);
+const el=(t,a,...c)=>{const n=document.createElement(t);
+  for(const k in (a||{})){const v=a[k];
+    if(v===null||v===undefined||v===false)continue;
+    if(k==="class")n.className=v; else if(k==="html")n.innerHTML=v;
+    else if(k==="text")n.textContent=v; else if(k.slice(0,2)==="on")n.addEventListener(k.slice(2),v);
+    else n.setAttribute(k,v);}
+  for(const x of c.flat()){if(x==null||x===false)continue;n.append(x.nodeType?x:document.createTextNode(x));}
+  return n;};
+const NS="http://www.w3.org/2000/svg";
+const sv=(t,a,...c)=>{const n=document.createElementNS(NS,t);
+  for(const k in (a||{})) if(a[k]!=null) n.setAttribute(k,a[k]);
+  c.flat().forEach(x=>{if(x)n.append(x.nodeType?x:document.createTextNode(x))}); return n;};
+const num=v=>{const n=parseFloat(String(v==null?"":v).replace(/[, ]/g,""));return isFinite(n)?n:0};
+const fmt=n=>{const r=Math.round(n*1000)/1000;return r.toLocaleString("en-IN",{maximumFractionDigits:3})};
+const sgn=n=>(n>0?"+":"")+fmt(n);
+const norm=s=>String(s==null?"":s).trim().toUpperCase();
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const initials=n=>String(n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const tstamp=s=>{try{return new Date(s).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}catch(e){return""}};
+let tT;function toast(m,k){clearTimeout(tT);let t=$("#toast");if(!t){t=el("div",{id:"toast"});document.body.append(t)}
+  t.className="toast "+(k||"");t.textContent=m;tT=setTimeout(()=>t.remove(),k==="err"?3600:1900)}
+
+const DAY=864e5;
+const pd=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||"").trim());if(!m)return null;
+  const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return isNaN(d.getTime())?null:d};
+const today=()=>{const n=new Date();return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate()))};
+const dd=(a,b)=>Math.round((b-a)/DAY);
+function monthsBetween(a,b){let m=(b.getUTCFullYear()-a.getUTCFullYear())*12+(b.getUTCMonth()-a.getUTCMonth());
+  const at=y=>new Date(Date.UTC(a.getUTCFullYear(),a.getUTCMonth()+y,a.getUTCDate()));
+  if(at(m)>b)m--; const lo=at(m),hi=at(m+1); return m+(hi>lo?(b-lo)/(hi-lo):0)}
+function life(mfg,exp){
+  const M=pd(mfg),E=pd(exp),T=today();
+  if(!M||!E||E<=M)return null;
+  const totalDays=dd(M,E),remDays=dd(T,E),ageDays=dd(M,T);
+  const pct=totalDays>0?(remDays/totalDays)*100:0;
+  return{totalDays,remDays,ageDays,totalMonths:monthsBetween(M,E),pct,
+    expired:remDays<0, bracket:bracketOf(pct),
+    status:remDays<0?"bad":(pct<S.cfg.minLifePct?"warn":"ok")};
+}
+
+function reconcile(shelf){
+  const m=new Map();
+  for(const r of S.master) if(r.shelf===shelf){
+    const e=m.get(r.sku)||{sku:r.sku,desc:r.desc,uom:r.uom,systemQty:0,scanned:0,lines:[]};
+    e.systemQty+=r.qty; if(!e.desc)e.desc=r.desc; m.set(r.sku,e);}
+  for(const l of S.lines) if(l.shelf===shelf){
+    const e=m.get(l.sku)||{sku:l.sku,desc:"",uom:"",systemQty:0,scanned:0,lines:[],extra:true};
+    e.scanned+=l.qty; e.lines.push(l); m.set(l.sku,e);}
+  return [...m.values()].map(e=>({...e,diff:e.scanned-e.systemQty,touched:e.lines.length>0}))
+    .sort((a,b)=>a.sku<b.sku?-1:a.sku>b.sku?1:0);
+}
+function shelfStat(shelf){
+  const mR=S.master.filter(r=>r.shelf===shelf), lR=S.lines.filter(l=>l.shelf===shelf);
+  const sysQty=mR.reduce((s,r)=>s+r.qty,0), cntQty=lR.reduce((s,l)=>s+l.qty,0);
+  const skuSet=new Set(mR.map(r=>r.sku)), cnt=new Set(lR.map(l=>l.sku));
+  const sub=S.shelfDone[shelf]||null;
+  return{shelf,sysQty,cntQty,diff:cntQty-sysQty,skuTotal:skuSet.size,
+    skuCounted:[...cnt].filter(s=>skuSet.has(s)).length,
+    extraSku:[...cnt].filter(s=>!skuSet.has(s)).length,
+    lines:lR.length, sub, done:!!sub,
+    state:sub?"done":(lR.length?"part":"pending"),
+    by:sub?sub.byName:(lR.length?lR[lR.length-1].byName:"")};
+}
+function allShelves(){
+  const k=new Set([...S.master.map(r=>r.shelf),...S.lines.map(l=>l.shelf)]);
+  return [...k].sort().map(shelfStat);
+}
+function totals(){
+  const st=allShelves();
+  const sysQty=S.master.reduce((s,r)=>s+r.qty,0), cntQty=S.lines.reduce((s,l)=>s+l.qty,0);
+  const sysK=new Set(S.master.map(r=>r.shelf+"\u0000"+r.sku));
+  const cntK=new Set(S.lines.map(l=>l.shelf+"\u0000"+l.sku));
+  let matched=0; cntK.forEach(k=>{if(sysK.has(k))matched++});
+  return{shelves:st.length, done:st.filter(s=>s.state==="done").length,
+    part:st.filter(s=>s.state==="part").length, pending:st.filter(s=>s.state==="pending").length,
+    skuTotal:sysK.size, skuCounted:matched, skuExtra:cntK.size-matched,
+    sysQty,cntQty,diff:cntQty-sysQty, lines:S.lines.length,
+    accuracy:sysQty>0?Math.max(0,100-Math.abs(cntQty-sysQty)/sysQty*100):0, stats:st};
+}
+function bracketAgg(){
+  const map={}; BRACKETS.forEach(b=>map[b.k]={...b,qty:0,lines:0,skus:new Set()});
+  let undated=0,uq=0;
+  S.lines.forEach(l=>{const L=life(l.mfg,l.exp);
+    if(!L){undated++;uq+=l.qty;return}
+    const e=map[L.bracket.k]; e.qty+=l.qty; e.lines++; e.skus.add(l.sku);});
+  return{list:BRACKETS.map(b=>({...map[b.k],skuCount:map[b.k].skus.size})),undated,undatedQty:uq};
+}
+
+function snap(){try{localStorage.setItem(LS,JSON.stringify(
+  {master:S.master,lines:S.lines,shelfDone:S.shelfDone,cfg:S.cfg,users:S.users,
+   cloud:S.cloud,me:S.me&&S.me.id}))}catch(e){}}
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(LS)||"null");if(!d)return null;
+  S.master=d.master||[];S.lines=d.lines||[];S.users=d.users||[];
+  S.shelfDone=migrate(d.shelfDone||{});S.cfg=Object.assign(S.cfg,d.cfg||{});
+  S.cloud=Object.assign(S.cloud,d.cloud||{});return d.me}catch(e){return null}}
+function migrate(sd){const o={};for(const k in sd){const v=sd[k];
+  o[k]=(v&&typeof v==="object")?v:{by:"",byName:"—",at:""}}return o}
+const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
+let sT=null,busy=false;
+function save(...what){what.forEach(w=>S.dirty[w]=true);snap();clearTimeout(sT);sT=setTimeout(flush,450);
+  if(!SANDBOX&&S.cloud.auto&&S.cloud.url) queuePush()}
+
+/*────── Google Apps Script bridge ──────*/
+let pT=null, pushing=false;
+function payload(){return{master:S.master,lines:S.lines,shelfDone:S.shelfDone,cfg:S.cfg,users:S.users}}
+function queuePush(){clearTimeout(pT);pT=setTimeout(()=>{cloudPush(true).catch(()=>{})},3500)}
+let syncPollT=null;
+function startCloudPolling(){
+  clearInterval(syncPollT);
+  syncPollT=setInterval(async()=>{
+    if(!S.booted||!S.me||!S.cloud.url||!S.cloud.key||pushing||Object.values(S.dirty).some(Boolean))return;
+    try{await cloudPull(true); if(S.view!=="scan"||!S.activeShelf) render();}catch(e){}
+  },5000);
+}
+function cloudChip(txt,cls){const c=$("#cloudChip");if(!c)return;
+  c.className="chip"+(cls?" "+cls:"");c.textContent=txt}
+async function cloudCall(body,qs){
+  if(SANDBOX) throw new Error("Blocked inside Claude — run the GitHub Pages copy for this");
+  const url=String(S.cloud.url||"").trim();
+  if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url))
+    throw new Error("Paste the /exec web app URL from Apps Script first");
+  let res;
+  if(qs){ res=await fetch(url+(url.indexOf("?")>=0?"&":"?")+qs,{method:"GET",redirect:"follow"}) }
+  else  { res=await fetch(url,{method:"POST",redirect:"follow",body:JSON.stringify(body)}) }
+  const txt=await res.text();
+  let j; try{j=JSON.parse(txt)}catch(e){throw new Error("Apps Script replied with a page, not JSON. Re-deploy with access set to Anyone.")}
+  if(!j.ok) throw new Error(j.error||"Apps Script refused the request");
+  return j;
+}
+async function cloudPing(){
+  const j=await cloudCall(null,"action=ping&key="+encodeURIComponent(S.cloud.key));
+  S.cloud.err="";return j;
+}
+function mergeClientPayload(remote,local){
+  const r=remote||{}, l=local||{};
+  const byId=new Map();
+  (r.lines||[]).forEach(x=>byId.set(x.id||uid(),x));
+  (l.lines||[]).forEach(x=>byId.set(x.id||uid(),x));
+  const sd=Object.assign({},r.shelfDone||{},l.shelfDone||{});
+  const cfg=Object.assign({},r.cfg||{},l.cfg||{});
+  cfg.deletedShelves=Object.assign({},(r.cfg||{}).deletedShelves||{},(l.cfg||{}).deletedShelves||{});
+  cfg.ccComplete=!!((r.cfg||{}).ccComplete||(l.cfg||{}).ccComplete);
+  const mm=new Map();
+  (r.master||[]).forEach(x=>mm.set([x.shelf,x.sku].join("\u0000"),x));
+  (l.master||[]).forEach(x=>mm.set([x.shelf,x.sku].join("\u0000"),x));
+  const deleted=cfg.deletedShelves||{};
+  const master=[...mm.values()].filter(x=>!deleted[x.shelf]);
+  const lines=[...byId.values()].filter(x=>!deleted[x.shelf]);
+  Object.keys(sd).forEach(k=>{if(deleted[k])delete sd[k]});
+  return {master,lines,shelfDone:sd,cfg,users:l.users&&l.users.length?l.users:(r.users||[])};
+}
+async function cloudPush(silent){
+  if(pushing)return; pushing=true; cloudChip("Sending…");
+  try{
+    let latest={master:[],lines:[],shelfDone:{},cfg:{},users:[]};
+    try{const pj=await cloudCall(null,"action=pull&key="+encodeURIComponent(S.cloud.key));latest=pj.payload||latest}catch(e){}
+    const merged=mergeClientPayload(latest,payload());
+    S.master=merged.master;S.lines=merged.lines;S.shelfDone=migrate(merged.shelfDone);S.cfg=Object.assign(S.cfg,merged.cfg||{});S.users=merged.users||S.users;
+    const j=await cloudCall({key:S.cloud.key,action:"push",payload:payload()});
+    S.cloud.lastPush=new Date().toISOString();S.cloud.err="";
+    Object.keys(S.dirty).forEach(k=>S.dirty[k]=false);
+    snap();
+    cloudChip("Sheet updated","live");
+    if(!silent){toast("Sent to Google Sheets — "+(j.rows||0)+" scan rows","good");render()}
+  }catch(e){
+    S.cloud.err=e.message;snap();cloudChip("Sync failed");
+    if(!silent)toast(e.message,"err");
+    throw e;
+  }finally{pushing=false}
+}
+async function cloudPull(silent){
+  const j=await cloudCall(null,"action=pull&key="+encodeURIComponent(S.cloud.key));
+  const p=j.payload||{};
+  if(!p.master&&!p.lines) throw new Error("The sheet has no saved count yet — push once first");
+  S.master=p.master||[];S.lines=p.lines||[];S.shelfDone=migrate(p.shelfDone||{});
+  S.cfg=Object.assign(S.cfg,p.cfg||{});S.users=p.users||S.users;
+  S.cloud.lastPull=new Date().toISOString();S.cloud.err="";snap();
+  if(S.me)S.me=S.users.filter(u=>u.id===S.me.id)[0]||S.me;
+  if(!silent) render();
+}
+async function flush(){
+  if(!DB||busy)return; busy=true;
+  try{
+    if(S.dirty.state){S.dirty.state=false;
+      await DB.doc("wms/state").set({cfg:S.cfg,shelfDone:S.shelfDone,at:new Date().toISOString()})}
+    if(S.dirty.users){S.dirty.users=false; await DB.doc("wms/users").set({list:S.users})}
+    if(S.dirty.master){S.dirty.master=false;
+      const cs=chunk(S.master,900);
+      for(let i=0;i<cs.length;i++) await DB.doc("master/c"+i).set({i,rows:cs[i]});
+      for(let i=cs.length;i<cs.length+6;i++) DB.doc("master/c"+i).delete().catch(()=>{})}
+    if(S.dirty.lines){S.dirty.lines=false;
+      const cs=chunk(S.lines,250);
+      for(let i=0;i<cs.length;i++) await DB.doc("lines/c"+i).set({i,rows:cs[i]});
+      for(let i=cs.length;i<cs.length+6;i++) DB.doc("lines/c"+i).delete().catch(()=>{})}
+    chip("synced");
+  }catch(e){chip("local")}
+  finally{busy=false;
+    if(S.dirty.master||S.dirty.lines||S.dirty.state||S.dirty.users)setTimeout(flush,900)}
+}
+function chip(m){const c=$("#chip");if(!c)return;
+  if(m==="synced"){c.className="chip live";c.textContent="Team · synced"}
+  else{c.className="chip";c.textContent="This device only"}}
+
+async function boot(){
+  const meId=loadLocal();
+  try{DB=window.claude&&claude.use?await claude.use("db"):null}catch(e){DB=null}
+  try{DL=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){DL=null}
+  if(DB){
+    try{
+      const [st,us,mc,lc]=await Promise.all([
+        DB.doc("wms/state").get(),DB.doc("wms/users").get(),
+        DB.collection("master").get(),DB.collection("lines").get()]);
+      const m=[],l=[];
+      const ord=d=>d.slice().sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+      ord(mc.docs).forEach(d=>{const r=d.data();if(r&&r.rows)m.push(...r.rows)});
+      ord(lc.docs).forEach(d=>{const r=d.data();if(r&&r.rows)l.push(...r.rows)});
+      if(m.length||l.length||st.exists||us.exists){
+        S.master=m;S.lines=l;
+        const sd=st.exists?st.data():{};
+        S.shelfDone=migrate(sd.shelfDone||{});S.cfg=Object.assign(S.cfg,sd.cfg||{});
+        S.users=(us.exists&&us.data().list)||[];
+        snap();
+      }else if(S.master.length||S.lines.length||S.users.length){
+        save("master","lines","state","users");
+      }
+    }catch(e){}
+  }
+  if(meId) S.me=S.users.find(u=>u.id===meId)||null;
+  S.booted=true; render();
+}
+
+async function hash(pw){
+  const salt="shelfcount::";
+  if(window.crypto&&crypto.subtle){
+    const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+pw));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+  let h=5381;for(const c of salt+pw)h=((h<<5)+h+c.charCodeAt(0))>>>0;return "f"+h.toString(16);
+}
+async function createUser(name,username,pw,role){
+  const u=norm(username);
+  if(!name.trim()) throw new Error("Full name is required");
+  if(!/^[A-Z0-9._-]{3,}$/.test(u)) throw new Error("Username needs 3+ characters, letters or digits");
+  if(S.users.some(x=>x.username===u)) throw new Error("That username already exists");
+  if(String(pw).length<4) throw new Error("Password needs at least 4 characters");
+  const rec={id:uid(),name:name.trim(),username:u,role,h:await hash(pw),at:new Date().toISOString()};
+  S.users.push(rec); save("users"); return rec;
+}
+async function login(username,pw){
+  const u=S.users.find(x=>x.username===norm(username));
+  if(!u) throw new Error("No such username");
+  if(u.h!==await hash(pw)) throw new Error("Wrong password");
+  S.me=u; snap(); return u;
+}
+const isAdmin=()=>!!(S.me&&S.me.role==="admin");
+const canTouch=l=>isAdmin()||(S.me&&l.by===S.me.id);
+
+const NAV=[
+  {g:"MAIN"},
+  {v:"dash",t:"Dashboard",i:"⌂",c:"c1"},
+  {v:"setup",t:"Upload Data",i:"⇩",c:"c2"},
+  {g:"STOCK AUDIT"},
+  {v:"scan",t:"Start Scanning",i:"⌁",c:"c3"},
+  {v:"search",t:"Master Search",i:"⌕",c:"c4"},
+  {v:"life",t:"Shelf Life",i:"◒",c:"c5"},
+  {v:"summary",t:"Final Report",i:"▤",c:"c6"},
+  {g:"REPORTS"},
+  {v:"export",t:"Reports / Export",i:"⇧",c:"c7"},
+  {v:"cloud",t:"Cloud Sync",i:"☁",c:"c9"},
+  {g:"ADMIN"},
+  {v:"users",t:"User Management",i:"♙",c:"c8"}
+];
+const VIEWC={dash:"c1",setup:"c2",scan:"c3",search:"c4",life:"c5",summary:"c6",export:"c7",cloud:"c9",users:"c8"};
+function render(){
+  const root=$("#root");
+  if(!S.booted){root.replaceChildren(el("div",{class:"gate"},el("p",{class:"muted",text:"Loading…"})));return}
+  if(!S.me){root.replaceChildren(gate());return}
+  const t=totals();
+  const top=el("header",{class:"top"},
+    el("div",{class:"logo"},
+      sv("svg",{width:26,height:26,viewBox:"0 0 24 24",fill:"none"},
+        sv("rect",{x:2.5,y:6,width:19,height:14,rx:1.5,stroke:"#F2C200","stroke-width":2}),
+        sv("path",{d:"M2.5 11h19",stroke:"#F2C200","stroke-width":2}),
+        sv("path",{d:"M8 6V3.5h8V6",stroke:"#EDEFEA","stroke-width":2}),
+        sv("path",{d:"M9 15.5l2 2 4-4",stroke:"#EDEFEA","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"})),
+      el("div",{},el("b",{text:"Arvind"}),el("i",{text:"STOCK AUDIT WMS"}))),
+    el("div",{class:"sp"}),
+    el("span",{class:"chip",id:"chip",text:DB?"Team · synced":SANDBOX?"This device only":"Self-hosted"}),
+    !SANDBOX?el("span",{class:"chip"+(S.cloud.url&&!S.cloud.err?" live":""),id:"cloudChip",
+      text:!S.cloud.url?"Sheet not linked":S.cloud.err?"Sync failed":"Sheet linked"}):null,
+    el("div",{class:"who"},el("span",{class:"av",text:initials(S.me.name)}),
+      el("span",{},S.me.name," ",el("span",{class:"tag "+(isAdmin()?"info":"idle"),text:isAdmin()?"Admin":"Operator"}))),
+    el("button",{class:"ib",onclick:themeToggle,title:"Light / dark"},"◐"),
+    el("button",{class:"ib",onclick(){S.me=null;snap();render()}},"Sign out"));
+
+  const aside=el("aside",{});
+  NAV.forEach(n=>{
+    if(n.g){aside.append(el("div",{class:"navgrp",text:n.g}));return}
+    if(n.v==="users"&&!isAdmin())return;
+    const bdg=n.v==="scan"&&t.pending?String(t.pending):"";
+    aside.append(el("button",{class:"nb","aria-current":String(S.view===n.v),
+      style:"--acc:var(--"+(n.c||"c1")+")",
+      onclick(){S.view=n.v;S.editId=null;window.scrollTo({top:0});render()}},
+      el("span",{class:"ic",text:n.i}), n.t, bdg?el("span",{class:"bdg",text:bdg}):null));
+  });
+
+  const main=el("main",{style:"--acc:var(--"+(VIEWC[S.view]||"c1")+")"});
+  ({dash:vDash,setup:vSetup,scan:vScan,search:vSearch,life:vLife,summary:vSummary,
+    export:vExport,cloud:vCloud,users:vUsers}[S.view]||vDash)(main,t);
+  main.append(el("div",{class:"foot"},
+    APP+" · "+(S.cfg.job||"Untitled count")+" · Prepared by "+(S.cfg.author||"—")+
+    (S.cfg.site?" · "+S.cfg.site:"")+" · generated "+new Date().toLocaleString("en-IN")));
+  root.replaceChildren(top,el("div",{class:"shell"},aside,main));
+}
+function themeToggle(){const c=document.documentElement.getAttribute("data-theme");
+  const dark=c?c==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme",dark?"light":"dark")}
+
+function gate(){
+  const w=el("div",{class:"gate"});
+  w.append(el("div",{class:"logo",style:"justify-content:center;margin-bottom:18px;color:var(--ink)"},
+    sv("svg",{width:34,height:34,viewBox:"0 0 24 24",fill:"none"},
+      sv("rect",{x:2.5,y:6,width:19,height:14,rx:1.5,stroke:"#D9A900","stroke-width":2}),
+      sv("path",{d:"M2.5 11h19",stroke:"#D9A900","stroke-width":2}),
+      sv("path",{d:"M8 6V3.5h8V6",stroke:"currentColor","stroke-width":2}),
+      sv("path",{d:"M9 15.5l2 2 4-4",stroke:"currentColor","stroke-width":2,"stroke-linecap":"round"})),
+    el("div",{},el("b",{style:"font-family:var(--cond);font-size:26px",text:"SHELFCOUNT"}))));
+  const first=!S.users.length;
+  const c=el("div",{class:"card"});
+  const err=el("p",{class:"hint bad"});
+  if(first){
+    c.append(el("h3",{text:"Create the admin account"}),
+      el("p",{class:"sub",text:"The first account runs the count and can add the rest of the team."}));
+    const n=el("input",{type:"text",placeholder:"Full name",value:"Arvind Kumar"});
+    const u=el("input",{type:"text",placeholder:"username",autocapitalize:"off"});
+    const p=el("input",{type:"password",placeholder:"choose a password"});
+    const go=el("button",{class:"btn hv block",style:"margin-top:12px",async onclick(){
+      try{const r=await createUser(n.value,u.value,p.value,"admin");
+        if(!S.cfg.author)S.cfg.author=r.name;
+        S.me=r;save("users","state");toast("Welcome, "+r.name,"good");render()}
+      catch(e){err.textContent=e.message}}},"Create account and start");
+    c.append(el("label",{class:"f"},el("span",{text:"Full name"}),n),
+      el("label",{class:"f",style:"margin-top:10px"},el("span",{text:"Username"}),u),
+      el("label",{class:"f",style:"margin-top:10px"},el("span",{text:"Password"}),p),err,go);
+    [n,u,p].forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")go.click()}));
+  }else{
+    c.append(el("h3",{text:"Sign in"}));
+    const u=el("input",{type:"text",placeholder:"username",autocapitalize:"off"});
+    const p=el("input",{type:"password",placeholder:"password"});
+    const go=el("button",{class:"btn hv block",style:"margin-top:12px",async onclick(){
+      try{await login(u.value,p.value);toast("Signed in","good");render()}
+      catch(e){err.textContent=e.message;p.select()}}},"Sign in");
+    c.append(el("label",{class:"f"},el("span",{text:"Username"}),u),
+      el("label",{class:"f",style:"margin-top:10px"},el("span",{text:"Password"}),p),err,go,
+      el("p",{class:"hint",text:"Forgot it? An admin can reset the password on the Users page."}));
+    [u,p].forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")go.click()}));
+  }
+  w.append(c);
+  w.append(el("p",{class:"hint",style:"text-align:center",
+    text:"Accounts record who scanned what. Anyone with the link can still open this page."}));
+  return w;
+}
+
+const tile=(k,v,d,cls)=>el("div",{class:"tile"+(cls?" "+cls:"")},
+  el("div",{class:"k",text:k}),el("div",{class:"v",html:v}),d?el("div",{class:"d",text:d}):null);
+function donut(segs,size){
+  const total=segs.reduce((s,x)=>s+x.value,0)||1;
+  const r=size/2-15,c=size/2,C=2*Math.PI*r;let acc=0;
+  const g=sv("svg",{width:size,height:size,viewBox:"0 0 "+size+" "+size,role:"img"});
+  g.append(sv("circle",{cx:c,cy:c,r:r,fill:"none",stroke:"var(--panel-3)","stroke-width":22}));
+  segs.forEach(s=>{if(s.value<=0)return;
+    const len=s.value/total*C;
+    g.append(sv("circle",{cx:c,cy:c,r:r,fill:"none",stroke:s.color,"stroke-width":22,
+      "stroke-dasharray":len+" "+(C-len),"stroke-dashoffset":-acc,
+      transform:"rotate(-90 "+c+" "+c+")"},sv("title",{},s.label+": "+fmt(s.value))));
+    acc+=len;});
+  g.append(sv("text",{x:c,y:c-2,"text-anchor":"middle","font-family":"Manrope",
+    "font-size":30,"font-weight":700,fill:"var(--ink)"},fmt(total)));
+  g.append(sv("text",{x:c,y:c+17,"text-anchor":"middle","font-family":"Manrope",
+    "font-size":13,fill:"var(--ink-2)"},"units dated"));
+  return g;
+}
+function hbars(rows,max){
+  const w=el("div",{});
+  rows.forEach(r=>{const p=max>0?r.v/max*100:0;
+    w.append(el("div",{style:"margin-bottom:9px"},
+      el("div",{style:"display:flex;justify-content:space-between;gap:8px;font-family:var(--cond);font-weight:600;font-size:14px"},
+        el("span",{text:r.k}),el("span",{class:"code",style:"color:var(--ink-2)",text:r.d||fmt(r.v)})),
+      el("div",{class:"bar",style:"margin-top:2px"},el("i",{class:r.cls||"",style:"width:"+Math.max(1,p)+"%"}))));});
+  return w;
+}
+function noData(msg){
+  return el("div",{class:"empty"},el("h3",{text:msg}),
+    el("p",{text:"Upload a shelf / SKU / quantity list first and the rest fills itself in."}),
+    el("button",{class:"btn hv",onclick(){S.view="setup";render()}},"Go to upload"));
+}
+
+/*────── CYCLE CONTROL ──────*/
+function activeShelves(){return allShelves()}
+function ccReady(){const t=totals(); return t.shelves>0 && t.stats.every(s=>s.state==="done")}
+function completeCycle(){
+  if(!isAdmin()){toast("Only admin can complete the cycle count","err");return}
+  if(!ccReady()){toast("Complete or delete every shelf before closing CC","err");return}
+  if(!confirm("Complete this cycle count?\n\nAfter completion no shelf can be edited, deleted or scanned again."))return;
+  S.cfg.ccComplete=true;save("state");toast("Cycle count completed","good");render();
+}
+function deleteShelf(shelf){
+  if(!isAdmin()){toast("Only admin can delete a shelf","err");return}
+  if(S.cfg.ccComplete){toast("Cycle count is already completed","err");return}
+  if(!confirm("Delete shelf "+shelf+" from this cycle count?\n\nIts master rows and scan entries will be removed and the shelf will not be counted."))return;
+  S.master=S.master.filter(r=>r.shelf!==shelf);
+  S.lines=S.lines.filter(l=>l.shelf!==shelf);
+  delete S.shelfDone[shelf];
+  if(S.cfg.shelfLocks)delete S.cfg.shelfLocks[shelf];
+  S.cfg.deletedShelves=S.cfg.deletedShelves||{}; S.cfg.deletedShelves[shelf]=true;
+  if(S.activeShelf===shelf)S.activeShelf=null;
+  save("master","lines","state");toast("Shelf "+shelf+" deleted from CC","good");render();
+}
+function cycleControl(host,t){
+  const ready=ccReady();
+  const bar=el("div",{class:"cycle-bar"},
+    el("div",{},el("span",{class:"state",text:S.cfg.ccComplete?"✓ Cycle Count Completed":ready?"✓ All shelves completed":"Cycle Count in progress"}),
+      el("div",{class:"hint",text:S.cfg.ccComplete?"Count is locked":"Complete every shelf or delete unused shelves"})),
+    el("div",{class:"compact-actions"},
+      el("button",{class:"btn ok",disabled:S.cfg.ccComplete||!ready,onclick:completeCycle},S.cfg.ccComplete?"CC Completed":"Complete CC"),
+      el("button",{class:"btn ghost sm",disabled:S.cfg.ccComplete,onclick(){S.view="scan";S.filter="pending";render()}},"Open Pending Shelves")));
+  host.append(bar);
+}
+
+/*────── DASHBOARD ──────*/
+function vDash(host,t){
+  const pct=t.shelves?((t.done/t.shelves)*100):0;
+  const skuPct=t.skuTotal?((t.skuCounted/t.skuTotal)*100):0;
+  const myQty=S.lines.filter(l=>l.by===S.me.id||(l.userQty&&num(l.userQty[S.me.id])>0)).reduce((a,l)=>a+(l.userQty?num(l.userQty[S.me.id]):num(l.qty)),0);
+  const cats={Apparel:{sys:0,cnt:0,shelves:new Set()},Cosmetics:{sys:0,cnt:0,shelves:new Set()},Electronics:{sys:0,cnt:0,shelves:new Set()}};
+  S.master.forEach(r=>{const c=cats[categoryLabel(r.category)]||cats.Apparel;c.sys+=num(r.qty);c.shelves.add(r.shelf)});
+  userVisibleLines().forEach(l=>{const c=cats[categoryLabel(l.category)]||cats.Apparel;c.cnt+=num(l.qty);c.shelves.add(l.shelf)});
+  const welcome=el("div",{class:"welcome"},
+    el("div",{},el("div",{class:"eyebrow",text:"WELCOME TO"}),el("h1",{text:"Stock Audit WMS"}),el("p",{text:"Track  •  Audit  •  Reconcile  •  Improve Accuracy"})),
+    el("div",{class:"welcome-badge",text:"Accurate Inventory · Stronger Operations"}));
+  host.append(welcome);
+  host.append(el("div",{class:"cycle-bar"},
+    el("div",{},el("span",{class:"state",text:S.cfg.ccComplete?"✓ Audit Completed":readyState(t)?"✓ Ready to Complete":"● Audit in Progress"}),el("div",{class:"hint",text:S.cfg.ccComplete?"All data is locked":"Complete all shelves or delete unused shelves"})),
+    el("div",{class:"compact-actions"},
+      el("button",{class:"btn hv",onclick(){S.view="setup";render()}},"Download / Upload"),
+      el("button",{class:"btn ok",disabled:S.cfg.ccComplete||!readyState(t),onclick:completeCycle},"Complete Audit"))));
+  host.append(el("div",{class:"tiles"},
+    tile("Total Shelves",fmt(t.shelves),fmt(t.done)+" completed","b"),
+    tile("Scanned Shelves",fmt(t.done),pct.toFixed(1)+"% complete","g"),
+    tile("Pending Shelves",fmt(t.pending),((100-pct).toFixed(1))+"% pending","y"),
+    tile("Total System Qty",fmt(t.sysQty),"uploaded stock","b"),
+    tile("Total Scanned Qty",fmt(t.cntQty),"physical count","g"),
+    tile("Difference",sgn(t.diff),t.sysQty?((t.diff/t.sysQty)*100).toFixed(2)+"% of book":"","r")));
+
+  const catCard=el("div",{class:"card category-card"});
+  catCard.append(el("div",{class:"row",style:"justify-content:space-between;align-items:center"},el("h3",{text:"Category Wise Progress"}),el("button",{class:"btn ghost sm",onclick(){S.view="summary";render()}},"View All →")));
+  [["Apparel","app",cats.Apparel],["Cosmetics","cos",cats.Cosmetics],["Electronics","elec",cats.Electronics]].forEach(([name,cls,c])=>{
+    const target=c.sys||0, got=c.cnt||0, pp=target?Math.min(100,got/target*100):0;
+    catCard.append(el("div",{class:"cat-row"},el("div",{class:"cat-name",text:name}),el("div",{},el("div",{style:"display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"},el("span",{text:fmt(got)+" / "+fmt(target)}),el("span",{text:pp.toFixed(0)+"%"})),el("div",{class:"progress "+cls},el("i",{style:"width:"+pp+"%"}))),el("div",{style:"font-size:11px;color:#718096",text:fmt(c.shelves.size)+" shelves"})));
+  });
+
+  const status=el("div",{class:"card"});status.append(el("h3",{text:"Audit Status"}));
+  status.append(el("div",{style:"display:flex;align-items:center;gap:15px"},donut([{value:t.done,label:"Scanned",color:"#0b9b65"},{value:t.pending,label:"Pending",color:"#f59e0b"}],150),el("div",{},
+    el("div",{style:"margin:8px 0;font-size:13px"},el("b",{text:"Scanned "}),fmt(t.done)," ("+pct.toFixed(1)+"%)"),
+    el("div",{style:"margin:8px 0;font-size:13px"},el("b",{text:"Pending "}),fmt(t.pending)," ("+(100-pct).toFixed(1)+"%)"),
+    el("div",{style:"margin:8px 0;font-size:13px"},el("b",{text:"Deleted "}),fmt(t.deleted||0)))));
+
+  const quick=el("div",{class:"card"});quick.append(el("h3",{text:"Quick Actions"}));const qg=el("div",{class:"quick-grid"});
+  [["Download Template","⇩",()=>downloadCategoryTemplate()],["Upload Data","⇧",()=>{S.view="setup";render()}],["Start Scanning","⌁",()=>{S.view="scan";render()}],["Complete Audit","✓",completeCycle]].forEach(([label,ic,fn])=>qg.append(el("button",{class:"quick-btn",onclick:fn},el("span",{class:"qicon",text:ic}),el("span",{style:"flex:1;text-align:left;margin-left:8px",text:label}),el("span",{text:"›"}))));quick.append(qg);
+
+  const rec=el("div",{class:"card dash-wide"});rec.append(el("div",{class:"row",style:"justify-content:space-between"},el("h3",{text:"Recent Scanning Activity"}),el("button",{class:"btn ghost sm",onclick(){S.view="summary";render()}},"View All →")));
+  const tb=el("tbody");userVisibleLines().slice(-6).reverse().forEach(l=>tb.append(el("tr",{},el("td",{text:tstamp(l.ts)}),el("td",{text:l.byName||"—"}),el("td",{class:"code",text:l.shelf}),el("td",{class:"code",text:l.sku}),el("td",{class:"n",text:fmt(l.qty)}),el("td",{},el("span",{class:"category-badge",text:categoryLabel(l.category)})))));
+  rec.append(el("div",{class:"scroll"},el("table",{class:"mini-table"},el("thead",{},el("tr",{},el("th",{text:"Time"}),el("th",{text:"User"}),el("th",{text:"Shelf"}),el("th",{text:"SKU"}),el("th",{text:"Qty"}),el("th",{text:"Category"}))),tb)));
+
+  const pending=el("div",{class:"card"});pending.append(el("div",{class:"row",style:"justify-content:space-between"},el("h3",{text:"Pending Shelves (Next in Line)"}),el("button",{class:"btn ghost sm",onclick(){S.view="scan";render()}},"View All →")));
+  const ptb=el("tbody");t.stats.filter(x=>x.state!=="done").slice(0,6).forEach((x,i)=>ptb.append(el("tr",{},el("td",{text:String(i+1)}),el("td",{class:"code",text:x.shelf}),el("td",{text:categoryLabel(shelfCategory(x.shelf))}),el("td",{class:"n",text:fmt(x.sysQty)}),el("td",{},el("span",{class:"status-pill",text:x.lines?"In Progress":"Pending"})))));
+  pending.append(el("div",{class:"scroll"},el("table",{class:"mini-table"},el("thead",{},el("tr",{},el("th",{text:"#"}),el("th",{text:"Shelf"}),el("th",{text:"Category"}),el("th",{text:"System Qty"}),el("th",{text:"Status"}))),ptb)));
+
+  const reports=el("div",{class:"card"});reports.append(el("div",{class:"row",style:"justify-content:space-between"},el("h3",{text:"Quick Report Downloads"}),el("button",{class:"btn ghost sm",onclick(){S.view="export";render()}},"View All →")));
+  const rl=el("div",{class:"report-list"});[["Scan Data","csvScans","SCAN-DATA.csv"],["Bin Summary","csvBins","BIN-SUMMARY.csv"],["SKU Summary","csvSkus","SKU-SUMMARY.csv"],["Shelf Life","csvBrackets","SHELF-LIFE.csv"],["Final Report","csvFullReport","FINAL-REPORT.csv"]].forEach(([label,fn,file])=>rl.append(el("div",{class:"report-row"},el("span",{class:"report-name",text:label}),el("button",{class:"btn hv",onclick(){if(typeof window[fn]==="function")download(file,toCsv(window[fn]()))}},"Download"))));reports.append(rl);
+
+  const sys=el("div",{class:"card"});sys.append(el("h3",{text:"System Information"}));sys.append(el("div",{style:"font-size:12px;line-height:2"},el("div",{},"Total Users: ",el("b",{text:fmt(S.users.length)})),el("div",{},"Active User: ",el("b",{text:S.me.name})),el("div",{},"My Scanned Qty: ",el("b",{text:fmt(myQty)})),el("div",{},"Cloud: ",el("b",{text:S.cloud.url&&!S.cloud.err?"Synced":"Local / Not linked"})),el("div",{class:"sync-ok",style:"margin-top:8px"},S.cloud.url&&!S.cloud.err?"Data synced across devices":"Ready for Google Sheet sync")));
+
+  const grid=el("div",{class:"dash-grid"},catCard,status,quick,rec,pending,reports,sys);host.append(grid);
+}
+function readyState(t){return t.shelves>0&&t.stats.every(s=>s.state==="done")}
+
+function downloadCategoryTemplate(){
+  S.cfg.templateDownloaded=true; save("state");
+  const rows=[["Category","Shelf","SKU","Qty"],["Apparel","A-01-01","SKU-1001",10],["Cosmetics","A-01-02","SKU-2001",5],["Electronics","A-01-03","SKU-3001",8]];
+  download("CYCLE-COUNT-CATEGORY-TEMPLATE.csv",toCsv(rows));
+}
+
+/*────── SETUP ──────*/
+function vSetup(host,t){
+  host.append(el("h2",{text:"Upload the stock list"}));
+  host.append(el("p",{class:"sub",text:"First download the template, fill Category, Shelf, SKU and Qty, then upload the completed file. Scanning mode is decided by SKU category, not by shelf."}));
+  host.append(el("div",{class:"card template-card"},el("div",{},el("h3",{text:"Category-wise upload template"}),el("p",{class:"hint",text:"Required columns: Category, Shelf, SKU, Qty · Category belongs to the SKU"})),el("button",{class:"btn hv",onclick:downloadCategoryTemplate},"Download Template")));
+  cycleControl(host,t);
+  if(S.master.length) host.append(el("div",{class:"tiles"},
+    tile("Shelves",fmt(t.shelves)),tile("SKU lines",fmt(t.skuTotal)),
+    tile("System quantity",fmt(t.sysQty)),tile("Scan entries",fmt(t.lines))));
+
+  const uploadUnlocked=!!S.cfg.templateDownloaded;
+  const ta=el("textarea",{rows:"8",disabled:!uploadUnlocked,placeholder:uploadUnlocked?"Category,Shelf,SKU,Qty\nApparel,A-01-01,SKU-1001,10\nCosmetics,A-01-02,SKU-2001,5\nElectronics,A-01-03,SKU-3001,8":"Download the template first"});
+  const file=el("input",{type:"file",accept:".csv,.tsv,.txt",style:"display:none",onchange(e){
+    const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{ta.value=String(r.result);pv()};r.readAsText(f)}});
+  const out=el("div",{});let P=null;
+  function pv(){out.replaceChildren();const txt=ta.value.trim();if(!txt){P=null;return}
+    const p=parseImport(txt);
+    if(p.error){P=null;out.append(el("p",{class:"hint bad",text:p.error}));return}
+    P=p;const sh=new Set(p.rows.map(r=>r.shelf)),q=p.rows.reduce((s,r)=>s+r.qty,0);
+    out.append(el("p",{class:"hint ok",text:fmt(p.rows.length)+" rows · "+fmt(sh.size)+" shelves · "+fmt(q)+" units"
+      +(p.headed?"":" · no header found, read as shelf / SKU / description / qty")
+      +(p.skipped?" · "+p.skipped+" rows skipped":"")}));
+    const tb=el("tbody");p.rows.slice(0,5).forEach(r=>tb.append(el("tr",{},
+      el("td",{},el("span",{class:"category-badge",text:categoryLabel(r.category)})),el("td",{class:"code",text:r.shelf}),el("td",{class:"code",text:r.sku}),
+      el("td",{text:r.desc||"—"}),el("td",{class:"n",text:fmt(r.qty)}))));
+    out.append(el("div",{class:"scroll"},el("table",{},el("thead",{},el("tr",{},
+      el("th",{text:"Category"}),el("th",{text:"Shelf"}),el("th",{text:"SKU"}),el("th",{text:"Description"}),
+      el("th",{class:"n",text:"System qty"}))),tb)));}
+  ta.addEventListener("input",pv);
+
+  const c1=el("div",{class:"card",style:uploadUnlocked?"":"opacity:.62"});
+  c1.append(el("h3",{text:"2 · Upload completed template"}),
+    !uploadUnlocked?el("p",{class:"hint warn",text:"Please download the template first. The upload/paste option will be enabled after the template is downloaded."}):null,
+    el("label",{class:"f"},el("span",{text:"Paste rows, or load a CSV"}),ta),
+    el("div",{class:"row",style:"margin-top:10px"},
+      el("button",{class:"btn ghost",onclick:()=>file.click()},"Choose CSV file"),
+      el("button",{class:"btn hv",onclick(){
+        if(!P){toast("Nothing to load","err");return}
+        if(S.master.length&&!confirm("Replace the current stock list?\n\nScanned entries are kept."))return;
+        S.master=P.rows; S.cfg.deletedShelves={}; save("master","state");toast(fmt(P.rows.length)+" rows loaded","good");
+        S.view="scan";render()}},S.master.length?"Replace stock list":"Create count task"),file),
+    out);
+  host.append(c1);
+
+  const c2=el("div",{class:"card"});
+  c2.append(el("h3",{text:"3 · Count details"}));
+  const mk=(lab,val,ph,on,type)=>el("label",{class:"f"},el("span",{text:lab}),
+    el("input",{type:type||"text",value:val,placeholder:ph,oninput:on}));
+  c2.append(el("div",{class:"oner",style:"grid-template-columns:repeat(auto-fit,minmax(190px,1fr))"},
+    mk("Count reference",S.cfg.job,"Cycle count — Zone A — wk 38",e=>{S.cfg.job=e.target.value;save("state")}),
+    mk("Author name",S.cfg.author,"Arvind Kumar",e=>{S.cfg.author=e.target.value;save("state")}),
+    mk("Site / warehouse",S.cfg.site,"DEL-01",e=>{S.cfg.site=e.target.value;save("state")}),
+    mk("Minimum acceptable life %",String(S.cfg.minLifePct),"50",
+      e=>{S.cfg.minLifePct=Math.max(0,Math.min(100,num(e.target.value)));save("state")},"number")));
+  c2.append(el("p",{class:"hint",text:"The author name prints on every exported report."}));
+  host.append(c2);
+
+  if(isAdmin()){
+    const c3=el("div",{class:"card"});
+    c3.append(el("h3",{text:"Reset"}),el("div",{class:"row"},
+      el("button",{class:"btn ghost",onclick(){
+        if(!confirm("Delete every scan entry and reopen all shelves? The stock list stays."))return;
+        S.lines=[];S.shelfDone={};save("lines","state");toast("Scans cleared");render()}},"Clear all scans"),
+      el("button",{class:"btn ghost",onclick(){
+        if(!confirm("Erase stock list, scans and settings? Users stay."))return;
+        S.master=[];S.lines=[];S.shelfDone={};save("master","lines","state");toast("Erased");render()}},"Erase count data")));
+    host.append(c3);
+  }
+  host.append(el("details",{class:"help"},el("summary",{text:"Which column names are understood"}),
+    el("p",{html:"Matched automatically, any order: <code>Shelf</code> / Location / Bin / Rack, <code>SKU</code> / Item / Material / Barcode, <code>Qty</code> / Quantity / On hand / System Qty, plus optional <code>Description</code> and <code>UOM</code>. Comma or tab separated."}),
+    el("p",{text:"Repeat the shelf on every SKU row. Duplicate shelf+SKU rows are added together."})));
+}
+function splitRows(text){const rows=[];let f="",row=[],q=false;
+  const t=text.replace(/\r\n?/g,"\n"),h=t.split("\n")[0];
+  const d=h.split("\t").length>h.split(",").length?"\t":",";
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch==='"')q=true; else if(ch===d){row.push(f);f=""}
+    else if(ch==="\n"){row.push(f);rows.push(row);row=[];f=""} else f+=ch}
+  row.push(f);rows.push(row);
+  return rows.filter(r=>r.some(c=>String(c).trim()!==""));}
+const HEAD={category:["category","cat","type","productcategory"],
+  shelf:["shelf","shelfcode","location","loc","bin","binlocation","binno","rack","storagebin","shelfno","shelfid"],
+  sku:["sku","skucode","item","itemcode","material","materialcode","product","productcode","article","partno","code","barcode","ean"],
+  qty:["qty","quantity","systemqty","stock","stockqty","bookqty","onhand","soh","systemquantity","qtyonhand"],
+  desc:["desc","description","itemname","productname","name","itemdescription","materialdescription"],
+  uom:["uom","unit","units","measure","baseuom"]};
+function parseImport(text){
+  const rows=splitRows(text); if(!rows.length)return{error:"Nothing to read."};
+  const key=c=>String(c).toLowerCase().replace(/[^a-z0-9]/g,"");
+  let idx={};rows[0].forEach((c,i)=>{const k=key(c);
+    for(const f in HEAD) if(idx[f]===undefined&&HEAD[f].indexOf(k)>=0)idx[f]=i});
+  let body=rows.slice(1),headed=true;
+  if(idx.shelf===undefined||idx.sku===undefined||idx.qty===undefined){
+    const first=rows[0]||[], firstCat=norm(first[0]);
+    if(first.length>=4 && ["APPAREL","COSMETICS","ELECTRONICS"].includes(firstCat)) idx={category:0,shelf:1,sku:2,qty:3};
+    else if(first.length>=4) idx={shelf:0,sku:1,desc:2,qty:3};
+    else idx={shelf:0,sku:1,qty:2};
+    body=rows;headed=false}
+  const out=[];let bad=0;
+  body.forEach(r=>{const shelf=norm(r[idx.shelf]),sku=norm(r[idx.sku]);
+    if(!shelf||!sku){bad++;return}
+    const cat=idx.category!==undefined?String(r[idx.category]||"").trim().replace(/\s+/g," "):"Apparel";
+    const category=cat||"Apparel";
+    if(!["APPAREL","COSMETICS","ELECTRONICS"].includes(norm(category))){bad++;return}
+    out.push({category:category.replace(/^./,x=>x.toUpperCase()),shelf:shelf,sku:sku,qty:num(r[idx.qty]),
+      desc:idx.desc!==undefined?String(r[idx.desc]||"").trim():"",
+      uom:idx.uom!==undefined?String(r[idx.uom]||"").trim():""})});
+  if(!out.length)return{error:"No usable rows — Category, Shelf, SKU and Qty are required."};
+  const cats=new Map();out.forEach(r=>{const c=cats.get(r.shelf)||new Set();c.add(norm(r.category));cats.set(r.shelf,c)});
+  return{rows:out,skipped:bad,headed:headed};
+}
+
+function shelfCategory(shelf){
+  const rows=S.master.filter(r=>r.shelf===shelf);
+  const cats=[...new Set(rows.map(r=>norm(r.category)).filter(Boolean))];
+  return cats.length?cats[0]:"APPAREL";
+}
+function skuCategory(shelf,sku){
+  const row=S.master.find(r=>r.shelf===shelf&&r.sku===sku);
+  return row&&row.category?norm(row.category):"APPAREL";
+}
+function categoryLabel(c){const x=norm(c);return x?x.charAt(0)+x.slice(1).toLowerCase():"Apparel"}
+function isCosmetics(c){return norm(c)==="COSMETICS"}
+function shelfLock(shelf){return (S.cfg.shelfLocks||{})[shelf]||null}
+function myShelfLock(shelf){const x=shelfLock(shelf);return x&&x.by===S.me.id}
+async function claimShelf(shelf){
+  if(S.cfg.ccComplete)throw new Error("Cycle count is completed");
+  const lock=shelfLock(shelf);
+  if(lock&&lock.by!==S.me.id)throw new Error("This shelf is already locked by another user");
+  if(lock&&lock.by===S.me.id)return true;
+  if(!SANDBOX&&S.cloud.url&&S.cloud.key){
+    try{
+      const j=await cloudCall({key:S.cloud.key,action:"claim",shelf:shelf,user:{id:S.me.id,name:S.me.name}});
+      const p=j.payload||{};S.shelfDone=migrate(p.shelfDone||S.shelfDone);S.cfg=Object.assign(S.cfg,p.cfg||{});snap();return true;
+    }catch(e){toast(e.message,"err");return false}
+  }
+  S.cfg.shelfLocks=S.cfg.shelfLocks||{};S.cfg.shelfLocks[shelf]={by:S.me.id,byName:S.me.name,at:new Date().toISOString()};save("state");return true;
+}
+function releaseShelfLock(shelf){
+  if(!S.cfg.shelfLocks)return;
+  if(isAdmin()||myShelfLock(shelf)){delete S.cfg.shelfLocks[shelf];save("state")}
+}
+function categoryScanCount(shelf,sku){return S.lines.filter(l=>l.shelf===shelf&&l.sku===sku).reduce((a,l)=>a+num(l.qty),0)}
+function systemSkuQty(shelf,sku){return S.master.filter(r=>r.shelf===shelf&&r.sku===sku).reduce((a,r)=>a+num(r.qty),0)}
+function appendScan(shelf,sku,extra){
+  const category=extra.category||skuCategory(shelf,sku), key=(l)=>l.shelf===shelf&&l.sku===sku&&norm(l.category||category)===norm(category)&&String(l.batch||"")===String(extra.batch||"")&&String(l.mfg||"")===String(extra.mfg||"")&&String(l.exp||"")===String(extra.exp||"");
+  let row=S.lines.find(key);
+  if(row){row.qty=num(row.qty)+1;row.ts=new Date().toISOString();row.lastBy=S.me.id;row.lastByName=S.me.name;row.byNames=Array.from(new Set([...(row.byNames||[]),S.me.name]));
+    row.userQty=row.userQty||{};row.userQty[S.me.id]=num(row.userQty[S.me.id])+1;
+  }else{
+    row={id:uid(),shelf,sku,category,batch:extra.batch||"",mfg:extra.mfg||"",exp:extra.exp||"",qty:1,ts:new Date().toISOString(),by:S.me.id,byName:S.me.name,byNames:[S.me.name],userQty:{}};
+    row.userQty[S.me.id]=1;S.lines.push(row);
+  }
+  save("lines");
+}
+function userVisibleLines(){
+  if(isAdmin())return S.lines;
+  const out=[];S.lines.forEach(l=>{const q=l.userQty?num(l.userQty[S.me.id]):(l.by===S.me.id?num(l.qty):0);if(q>0)out.push(Object.assign({},l,{qty:q,by:S.me.id,byName:S.me.name}));});return out;
+}
+
+/*────── SCAN ──────*/
+function vScan(host,t){
+  cycleControl(host,t);
+  if(S.cfg.ccComplete){host.append(el("div",{class:"banner",text:"Cycle count is completed and locked. Use Final report or Export to download the complete result."}));return}
+  if(!S.master.length){host.append(el("h2",{text:"Scan & count"}),noData("No count task loaded"));return}
+  if(S.activeShelf) return scanShelf(host);
+
+  host.append(el("h2",{text:"Scan a shelf"}));
+  host.append(el("p",{class:"sub",text:"Scan or type the shelf code. Completed shelves turn green and lock."}));
+  host.append(el("div",{class:"tiles"},
+    tile("Pending",fmt(t.pending),"not started"),
+    tile("In progress",fmt(t.part),"open entries","y"),
+    tile("Completed",fmt(t.done),"submitted","g"),
+    tile("Scan entries",fmt(t.lines),"across all shelves","b")));
+
+  const jump=el("input",{class:"big",type:"search",placeholder:"Scan shelf barcode…",autocomplete:"off",
+    onkeydown(e){if(e.key!=="Enter")return;e.preventDefault();
+      const v=norm(jump.value);if(!v)return;
+      const flat=x=>x.replace(/[^A-Z0-9]/g,"");
+      const hit=t.stats.filter(s=>s.shelf===v)[0]||t.stats.filter(s=>flat(s.shelf)===flat(v))[0];
+      if(!hit){toast("Shelf "+v+" is not in this count","err");jump.select();return}
+      if(hit.done){toast("Shelf "+v+" is already completed and locked","err");jump.select();return}
+      if(S.cfg.ccComplete){toast("Cycle count is completed","err");jump.select();return}
+      jump.value=""; (async()=>{ if(!(await claimShelf(hit.shelf))) return; S.activeShelf=hit.shelf;S.editId=null;render() })()}});
+  host.append(el("div",{class:"card"},el("label",{class:"f"},el("span",{text:"Shelf scan"}),jump)));
+  setTimeout(()=>jump.focus(),30);
+
+  const seg=el("div",{class:"seg"});
+  [["all","All"],["pending","Pending"],["part","In progress"],["done","Completed"]].forEach(function(p){
+    seg.append(el("button",{"aria-pressed":String(S.filter===p[0]),onclick(){S.filter=p[0];paint()}},p[1]))});
+  const q=el("input",{type:"search",placeholder:"Filter shelves…",value:S.q,style:"max-width:210px",
+    oninput(e){S.q=e.target.value;paint()}});
+  host.append(el("div",{class:"filters"},seg,q));
+  const grid=el("div",{class:"shelves"});host.append(grid);
+  function paint(){
+    const keys=["all","pending","part","done"];
+    seg.querySelectorAll("button").forEach((b,i)=>b.setAttribute("aria-pressed",String(keys[i]===S.filter)));
+    grid.replaceChildren();
+    const needle=norm(S.q);
+    const list=t.stats.filter(s=>((S.filter==="all"?(s.state!=="done"):s.state===S.filter))&&(!needle||s.shelf.indexOf(needle)>=0));
+    if(!list.length){grid.append(el("p",{class:"muted",text:"No shelves match."}));return}
+    list.forEach(s=>{const p=s.skuTotal?Math.min(100,s.skuCounted/s.skuTotal*100):(s.lines?100:0);
+      const card=el("div",{class:"shcard "+s.state});
+      card.append(
+        el("button",{class:"btn ghost sm",style:"float:right",disabled:s.done||S.cfg.ccComplete||!isAdmin(),onclick:(e)=>{e.stopPropagation();deleteShelf(s.shelf)}},"Delete"),
+        el("div",{class:"id",text:s.shelf}),
+        el("div",{class:"mt",text:s.skuCounted+"/"+s.skuTotal+" SKU · sys "+fmt(s.sysQty)}),
+        el("div",{class:"bar"},el("i",{class:s.state==="done"?"ok":s.state==="part"?"warn":"",style:"width:"+p+"%"})),
+        el("div",{class:"ft"},
+          el("span",{class:"tag "+(s.state==="done"?"ok":s.state==="part"?"warn":"idle"),text:s.state==="done"?"Completed":s.state==="part"?"In progress":"Pending"}),
+          s.lines?el("span",{class:"code",style:"color:var(--ink-2)",text:fmt(s.cntQty)+(s.done?" ("+sgn(s.diff)+")":"")}):null),
+        s.by?el("div",{class:"mt",style:"margin:5px 0 0",text:"by "+s.by}):null,
+        el("button",{class:"btn ghost block",style:"margin-top:6px",disabled:s.done||S.cfg.ccComplete,onclick(){if(!s.done){(async()=>{if(!(await claimShelf(s.shelf)))return;S.activeShelf=s.shelf;S.editId=null;render()})()}}},s.done?"Completed & Locked":"Open Shelf")
+      );
+      grid.append(card);
+    });
+  }
+  paint();
+}
+
+function scanShelf(host){
+  const shelf=S.activeShelf, st=shelfStat(shelf);
+  const category=shelfCategory(shelf), lock=shelfLock(shelf);
+  if(lock&&lock.by!==S.me.id){
+    host.append(el("div",{class:"mode-banner"},el("div",{},el("strong",{text:"Shelf locked"}),el("div",{class:"hint",text:isAdmin()?"Locked by "+(lock.byName||"another user"):"This shelf is already assigned to another user."})),el("span",{class:"category-badge",text:categoryLabel(category)})));return;
+  }
+  const mRows=S.master.filter(r=>r.shelf===shelf);
+  const skuIdx=new Map(mRows.map(r=>[r.sku,r]));
+  const locked=st.done;
+  if(S.cfg.ccComplete){host.append(el("div",{class:"banner",text:"Cycle count completed — this shelf is locked."}));return}
+
+  host.append(el("div",{class:"row",style:"margin-bottom:10px"},
+    el("button",{class:"btn ghost sm",onclick(){S.activeShelf=null;S.editId=null;render()}},"← All shelves"),
+    el("h2",{style:"margin:0",text:shelf}),el("span",{class:"category-badge",text:categoryLabel(category)}),
+    el("span",{class:"tag "+(locked?"ok":st.lines?"warn":"idle"),
+      text:locked?"Completed":st.lines?"In progress":"Pending"}),
+    locked&&st.sub?el("span",{class:"code muted",
+      text:"submitted by "+st.sub.byName+" · "+tstamp(st.sub.at)}):null));
+
+  host.append(el("div",{class:"tiles"},
+    tile("System qty",fmt(st.sysQty),st.skuTotal+" SKU on this shelf","b"),
+    tile("Physical counted",fmt(st.cntQty),st.lines+" entries","y"),
+    tile("Difference",st.lines?sgn(st.diff):"—",st.sysQty?(st.diff/st.sysQty*100).toFixed(1)+"%":"",st.diff?"r":"g"),
+    tile("SKU progress",fmt(st.skuCounted)+"<small> / "+fmt(st.skuTotal)+"</small>",
+      st.extraSku?st.extraSku+" extra found":"","g")));
+
+  if(locked){
+    host.append(el("div",{class:"banner",text:"This shelf is submitted and locked. Reopen it to change anything."}));
+    host.append(el("div",{class:"row",style:"margin-bottom:14px"},
+      el("button",{class:"btn ghost",onclick(){
+        if(!isAdmin()&&st.sub.by!==S.me.id){toast("Only the submitting user or an admin can reopen","err");return}
+        if(!confirm("Reopen "+shelf+" for editing?"))return;
+        delete S.shelfDone[shelf];save("state");toast("Reopened");render()}},"Reopen shelf")));
+  }else{
+    host.append(entryRow(shelf,skuIdx));
+  }
+  host.append(shelfLineTable(shelf,locked));
+  host.append(shelfRecon(shelf,st,locked));
+}
+
+function entryRow(shelf,skuIdx){
+  const card=el("div",{class:"scan-focus"});
+  const targetRows=S.master.filter(r=>r.shelf===shelf), target=new Map();
+  targetRows.forEach(r=>target.set(r.sku,(target.get(r.sku)||0)+num(r.qty)));
+  const counted=sku=>categoryScanCount(shelf,sku);
+  const title=el("div",{class:"mode-banner"},
+    el("div",{},el("strong",{text:"SKU-based scanning mode"}),
+      el("div",{class:"hint",text:"Scan a SKU. Apparel/Electronics count 1 pc immediately; Cosmetics requires Batch + MFG + Expiry."})),
+    el("span",{class:"category-badge",text:"SKU Category"}));
+  card.append(title);
+  const progress=el("div",{class:"tiles"},
+    tile("Units scanned",fmt(S.lines.filter(l=>l.shelf===shelf).reduce((a,l)=>a+l.qty,0)),"live"),
+    tile("System units",fmt(targetRows.reduce((a,r)=>a+num(r.qty),0)),"reference only","b"),
+    tile("SKU lines",fmt(new Set(targetRows.map(r=>r.sku)).size),"master SKUs","y"));
+  card.append(progress);
+
+  const sku=el("input",{class:"big scan-input",placeholder:"Scan SKU / EAN…",autocomplete:"off"});
+  const extraWrap=el("div",{class:"oner",style:"display:none"});
+  const batch=el("input",{placeholder:"Batch (required)",autocomplete:"off"});
+  const mfg=el("input",{type:"date"}),exp=el("input",{type:"date"});
+  const mode=el("div",{class:"hint",style:"min-height:22px"});
+  const add=el("button",{class:"btn hv",style:"display:none",onclick:commit},"Confirm 1 PC");
+  const clear=el("button",{class:"btn ghost",onclick(){sku.value="";batch.value="";mfg.value="";exp.value="";extraWrap.style.display="none";add.style.display="none";mode.className="hint";mode.textContent="Ready for next SKU scan.";sku.focus()}} ,"Clear");
+  extraWrap.append(el("label",{class:"f"},el("span",{text:"Batch *"}),batch),el("label",{class:"f"},el("span",{text:"MFG *"}),mfg),el("label",{class:"f"},el("span",{text:"Expiry *"}),exp));
+  const form=el("div",{class:"oner"},el("label",{class:"f wide"},el("span",{text:"SKU / EAN"}),sku));
+  form.append(extraWrap,el("div",{class:"row",style:"align-items:end"},add,clear));
+  card.append(form,mode);
+
+  const targetList=el("div",{class:"card",style:"margin-top:10px;padding:10px"});
+  targetList.append(el("h3",{text:"SKU scan progress"}));
+  const tb=el("tbody");
+  targetRows.forEach((q,skuCode)=>{const got=counted(skuCode), diff=got-num(q);tb.append(el("tr",{},
+    el("td",{class:"code",text:skuCode}),el("td",{},el("span",{class:"category-badge",text:categoryLabel(q.category)})),
+    el("td",{class:"n",text:fmt(q)}),el("td",{class:"n",text:fmt(got)}),
+    el("td",{},el("span",{class:"tag "+(diff===0?"ok":diff>0?"warn":"idle"),text:diff===0?"Match":diff>0?"Extra "+fmt(diff):fmt(-diff)+" pending"}))));});
+  targetList.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},el("th",{text:"SKU"}),el("th",{text:"Category"}),el("th",{class:"n",text:"System Qty"}),el("th",{class:"n",text:"Scanned"}),el("th",{text:"Status"}))),tb)));
+  card.append(targetList);
+
+  function paint(){
+    const v=norm(sku.value), sys=target.get(v)||0, got=counted(v), cat=v?skuCategory(shelf,v):"";
+    if(!v){mode.className="hint";mode.textContent="Ready for next SKU scan.";extraWrap.style.display="none";add.style.display="none";return}
+    if(!sys){mode.className="hint bad";mode.textContent="SKU is not mapped to this shelf master.";extraWrap.style.display="none";add.style.display="none";return}
+    const desc=(skuIdx.get(v)||{}).desc||"";
+    if(isCosmetics(cat)){
+      mode.className="hint ok";mode.textContent=(desc?desc+" · ":"")+"Cosmetics mode — Batch, MFG and Expiry are mandatory. System qty: "+fmt(sys)+"; extra scan is allowed.";
+      extraWrap.style.display="grid";add.style.display="inline-flex";
+      add.disabled=!(batch.value.trim()&&mfg.value&&exp.value);
+    }else{
+      mode.className="hint ok";mode.textContent=(desc?desc+" · ":"")+categoryLabel(cat)+" mode — 1 pc per scan. System qty: "+fmt(sys)+"; extra scan is allowed.";
+      extraWrap.style.display="none";add.style.display="none";
+      if(!paint.busy){paint.busy=true;setTimeout(()=>{paint.busy=false;commit()},0)}
+    }
+  }
+  sku.addEventListener("input",paint);batch.addEventListener("input",paint);mfg.addEventListener("input",paint);exp.addEventListener("input",paint);
+  sku.addEventListener("keydown",e=>{if(e.key!=="Enter")return;e.preventDefault();paint();const v=norm(sku.value);if(!v||!target.has(v))return;if(isCosmetics(skuCategory(shelf,v)))batch.focus();});
+  batch.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();mfg.focus()}});
+  mfg.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();exp.focus()}});
+  exp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commit()}});
+  function commit(){
+    const v=norm(sku.value); if(!v){toast("Scan SKU first","err");sku.focus();return}
+    const sys=target.get(v)||0; if(!sys){toast("SKU is not mapped to this shelf","err");sku.select();return}
+    const cat=skuCategory(shelf,v);
+    if(isCosmetics(cat) && (!batch.value.trim()||!mfg.value||!exp.value)){toast("Batch, MFG and Expiry are compulsory for Cosmetics","err");return}
+    if(isCosmetics(cat) && !life(mfg.value,exp.value)){toast("Expiry must be after MFG date","err");return}
+    appendScan(shelf,v,{category:cat,batch:batch.value.trim(),mfg:mfg.value||"",exp:exp.value||""});
+    batch.value="";mfg.value="";exp.value="";sku.value="";extraWrap.style.display="none";add.style.display="none";
+    mode.className="hint ok";mode.textContent="1 pc saved. Scan the next SKU.";render();
+    setTimeout(()=>{const x=document.querySelector('.scan-input');if(x)x.focus()},40);
+  }
+  setTimeout(()=>sku.focus(),40);
+  return card;
+}
+
+function shelfRecon(shelf,st,locked){
+  const rec=reconcile(shelf), card=el("div",{class:"card"});
+  card.append(el("h3",{text:"System vs physical — "+shelf}));
+  if(!rec.length){card.append(el("p",{class:"muted",text:"Nothing here yet."}));return card}
+  const tb=el("tbody");
+  rec.forEach(r=>{
+    const cls=!r.touched?"idle":(r.diff===0?"ok":"bad");
+    const lab=!r.touched?"Not counted":(r.diff===0?"Match":r.diff>0?"Over":"Short");
+    const who=[...new Set(r.lines.map(l=>l.byName).filter(Boolean))].join(", ");
+    tb.append(el("tr",{},
+      el("td",{class:"code"},r.sku,r.extra?el("span",{class:"tag info",style:"margin-left:5px",text:"extra"}):null),
+      el("td",{text:r.desc||"—"}),
+      el("td",{class:"n",text:fmt(r.systemQty)}),
+      el("td",{class:"n",text:r.touched?fmt(r.scanned):"—"}),
+      el("td",{class:"n",style:r.diff?"color:var(--bad);font-weight:600":"",text:r.touched?sgn(r.diff):"—"}),
+      el("td",{class:"n",text:String(r.lines.length)}),
+      el("td",{text:who||"—"}),
+      el("td",{},el("span",{class:"tag "+cls,text:lab})),
+      el("td",{class:"n"}, locked?null:(!r.touched?el("button",{class:"btn ghost xs",onclick(){
+        S.lines.push({id:uid(),shelf:shelf,sku:r.sku,batch:"",mfg:"",exp:"",qty:0,
+          ts:new Date().toISOString(),by:S.me.id,byName:S.me.name,nil:true});
+        save("lines");toast(r.sku+" marked nil");render()}},"Mark nil"):null))));
+  });
+  card.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+    el("th",{text:"SKU"}),el("th",{text:"Description"}),el("th",{class:"n",text:"System qty"}),
+    el("th",{class:"n",text:"Physical qty"}),el("th",{class:"n",text:"Difference"}),
+    el("th",{class:"n",text:"Entries"}),el("th",{text:"Counted by"}),el("th",{text:"Result"}),
+    el("th",{text:""}))),tb)));
+
+  const pend=rec.filter(r=>!r.touched).length;
+  card.append(el("div",{class:"tiles",style:"margin-top:14px"},
+    tile("System total",fmt(st.sysQty),"","b"),
+    tile("Physical total",fmt(st.cntQty),"","y"),
+    tile("Difference",sgn(st.diff),st.sysQty?(Math.abs(st.diff)/st.sysQty*100).toFixed(1)+"% of book":"",st.diff?"r":"g"),
+    tile("SKU still open",fmt(pend),pend?"will report as short":"all covered",pend?"r":"g")));
+  if(!locked) card.append(el("div",{class:"row",style:"margin-top:12px"},
+    el("button",{class:"btn ok",onclick(){
+      if(!st.lines){toast("Scan at least one entry before submitting","err");return}
+      if(pend&&!confirm(pend+" SKU on this shelf are not counted.\n\nSubmit anyway? They will be reported short."))return;
+      S.shelfDone[shelf]={by:S.me.id,byName:S.me.name,at:new Date().toISOString()};
+      save("state");toast("Shelf "+shelf+" completed","good");
+      S.activeShelf=null;S.editId=null;render();window.scrollTo({top:0})}},"Submit shelf & scan next"),
+    el("button",{class:"btn ghost",onclick(){S.activeShelf=null;S.editId=null;render()}},"Leave open")));
+  return card;
+}
+
+/*────── MASTER SEARCH ──────*/
+function vSearch(host){
+  host.append(el("h2",{text:"Master search"}));
+  host.append(el("p",{class:"sub",text:"Scan any SKU to see total system quantity against total scanned, then the shelf-by-shelf split. A shelf code works here too."}));
+  if(!S.master.length&&!S.lines.length){host.append(noData("Nothing loaded to search"));return}
+
+  const inp=el("input",{class:"big",type:"search",placeholder:"Scan SKU or shelf code…",value:S.searchQ,autocomplete:"off"});
+  const res=el("div",{});
+  const run=()=>{S.searchQ=inp.value;res.replaceChildren(searchResult(norm(inp.value)))};
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run();inp.select()}});
+  host.append(el("div",{class:"card"},el("div",{class:"row"},
+    el("label",{class:"f",style:"flex:1;min-width:220px"},el("span",{text:"SKU / shelf"}),inp),
+    el("button",{class:"btn hv",style:"height:44px",onclick:run},"Search"),
+    el("button",{class:"btn ghost",style:"height:44px",onclick(){inp.value="";S.searchQ="";res.replaceChildren()}},"Clear"))));
+  host.append(res);
+  setTimeout(()=>inp.focus(),30);
+  if(S.searchQ) res.replaceChildren(searchResult(norm(S.searchQ)));
+  if(!S.searchQ){
+    const skus=[...new Set(S.master.map(r=>r.sku))];
+    const rec=[...new Set(S.lines.slice(-14).reverse().map(l=>l.sku))].slice(0,12);
+    const pick=rec.length?rec:skus.slice(0,12);
+    if(pick.length){
+      const c=el("div",{class:"card"});c.append(el("h4",{text:rec.length?"Recently scanned":"SKU in this count"}));
+      const wrap=el("div",{class:"row"});
+      pick.forEach(s=>wrap.append(el("button",{class:"btn ghost sm",onclick(){inp.value=s;run()}},s)));
+      c.append(wrap);host.append(c);
+    }
+  }
+}
+function searchResult(q){
+  const box=el("div",{});
+  if(!q)return box;
+  const isShelf=S.master.some(r=>r.shelf===q)||S.lines.some(l=>l.shelf===q);
+  const isSku=S.master.some(r=>r.sku===q)||S.lines.some(l=>l.sku===q);
+  if(!isShelf&&!isSku){
+    box.append(el("div",{class:"card"},el("p",{class:"hint bad",
+      text:'"'+q+'" is not in the stock list or in any scan.'})));
+    return box;
+  }
+  if(isShelf&&!isSku){
+    const st=shelfStat(q);
+    box.append(el("div",{class:"tiles"},
+      tile("Shelf",q,st.state==="done"?"Completed":st.state==="part"?"In progress":"Pending",
+        st.state==="done"?"g":st.state==="part"?"y":""),
+      tile("System qty",fmt(st.sysQty),st.skuTotal+" SKU","b"),
+      tile("Physical qty",fmt(st.cntQty),st.lines+" entries","y"),
+      tile("Difference",st.lines?sgn(st.diff):"—","",st.diff?"r":"g")));
+    const tb=el("tbody");
+    reconcile(q).forEach(r=>tb.append(el("tr",{},
+      el("td",{class:"code",text:r.sku}),el("td",{text:r.desc||"—"}),
+      el("td",{class:"n",text:fmt(r.systemQty)}),el("td",{class:"n",text:r.touched?fmt(r.scanned):"—"}),
+      el("td",{class:"n",style:r.diff?"color:var(--bad);font-weight:600":"",text:r.touched?sgn(r.diff):"—"}),
+      el("td",{text:[...new Set(r.lines.map(l=>l.byName))].join(", ")||"—"}))));
+    box.append(el("div",{class:"card"},el("h3",{text:"SKU on this shelf"}),
+      el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+        el("th",{text:"SKU"}),el("th",{text:"Description"}),el("th",{class:"n",text:"System"}),
+        el("th",{class:"n",text:"Physical"}),el("th",{class:"n",text:"Difference"}),el("th",{text:"By"}))),tb))));
+    box.append(el("button",{class:"btn hv",onclick(){S.activeShelf=q;S.view="scan";render()}},"Open this shelf"));
+    return box;
+  }
+  const mRows=S.master.filter(r=>r.sku===q), lRows=S.lines.filter(l=>l.sku===q);
+  const sys=mRows.reduce((s,r)=>s+r.qty,0), phy=lRows.reduce((s,l)=>s+l.qty,0);
+  const desc=(mRows.filter(r=>r.desc)[0]||{}).desc||"";
+  box.append(el("h3",{style:"font-size:24px",text:q+(desc?" · "+desc:"")}));
+  box.append(el("div",{class:"tiles"},
+    tile("Total system qty",fmt(sys),mRows.length+" shelf location(s)","b"),
+    tile("Total scanned qty",fmt(phy),lRows.length+" scan entries","y"),
+    tile("Difference",lRows.length?sgn(phy-sys):"—",sys?((phy-sys)/sys*100).toFixed(2)+"% of book":"",(phy-sys)?"r":"g"),
+    tile("Shelves covered",fmt(new Set(lRows.map(l=>l.shelf)).size)+"<small> / "+fmt(new Set(mRows.map(r=>r.shelf)).size)+"</small>","","g")));
+
+  const shelves=[...new Set([].concat(mRows.map(r=>r.shelf),lRows.map(l=>l.shelf)))].sort();
+  const tb=el("tbody");
+  shelves.forEach(sh=>{
+    const sq=mRows.filter(r=>r.shelf===sh).reduce((s,r)=>s+r.qty,0);
+    const ls=lRows.filter(l=>l.shelf===sh), pq=ls.reduce((s,l)=>s+l.qty,0);
+    const sub=S.shelfDone[sh];
+    tb.append(el("tr",{},
+      el("td",{},el("button",{class:"btn ghost xs",onclick(){S.activeShelf=sh;S.view="scan";render()}},sh)),
+      el("td",{class:"n",text:fmt(sq)}),
+      el("td",{class:"n",text:ls.length?fmt(pq):"—"}),
+      el("td",{class:"n",style:(pq-sq)&&ls.length?"color:var(--bad);font-weight:600":"",text:ls.length?sgn(pq-sq):"—"}),
+      el("td",{class:"n",text:String(ls.length)}),
+      el("td",{text:[...new Set(ls.map(l=>l.byName))].join(", ")||"—"}),
+      el("td",{},el("span",{class:"tag "+(sub?"ok":ls.length?"warn":"idle"),
+        text:sub?"Completed":ls.length?"In progress":"Pending"}))));
+  });
+  box.append(el("div",{class:"card"},el("h3",{text:"Shelf-wise system vs physical"}),
+    el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+      el("th",{text:"Shelf"}),el("th",{class:"n",text:"System qty"}),el("th",{class:"n",text:"Physical qty"}),
+      el("th",{class:"n",text:"Difference"}),el("th",{class:"n",text:"Entries"}),
+      el("th",{text:"Scanned by"}),el("th",{text:"Status"}))),tb))));
+
+  if(lRows.length){
+    const bt=el("tbody");
+    lRows.slice().sort((a,b)=>{const A=life(a.mfg,a.exp),B=life(b.mfg,b.exp);
+      return (A?A.remDays:1e9)-(B?B.remDays:1e9)}).forEach(l=>{
+      const L=life(l.mfg,l.exp);
+      bt.append(el("tr",{},el("td",{class:"code",text:l.shelf}),el("td",{class:"code",text:l.batch||"—"}),
+        el("td",{class:"code",text:l.mfg||"—"}),el("td",{class:"code",text:l.exp||"—"}),
+        el("td",{class:"n",text:L?L.totalMonths.toFixed(1):"—"}),
+        el("td",{class:"n"},L?el("span",{class:"tag "+L.bracket.cls,text:L.pct.toFixed(1)+"%"}):"—"),
+        el("td",{class:"n",text:L?fmt(L.remDays):"—"}),
+        el("td",{class:"n",text:fmt(l.qty)}),el("td",{text:l.byName||"—"})))});
+    box.append(el("div",{class:"card"},el("h3",{text:"Batches counted, shortest life first"}),
+      el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+        el("th",{text:"Shelf"}),el("th",{text:"Batch"}),el("th",{text:"MFG"}),el("th",{text:"Expiry"}),
+        el("th",{class:"n",text:"Shelf life (mth)"}),el("th",{class:"n",text:"Current life %"}),
+        el("th",{class:"n",text:"Days left"}),el("th",{class:"n",text:"Qty"}),el("th",{text:"By"}))),bt))));
+  }
+  return box;
+}
+
+/*────── SHELF LIFE ──────*/
+function vLife(host){
+  host.append(el("h2",{text:"Shelf life report"}));
+  host.append(el("p",{class:"sub",text:"Pick a bracket to filter the SKU-wise summary below. Brackets run on remaining life percentage."}));
+  const rows=S.lines.map(l=>({l:l,L:life(l.mfg,l.exp)})).filter(x=>x.L);
+  const agg=bracketAgg();
+  if(!rows.length){host.append(el("div",{class:"empty"},el("h3",{text:"No dated stock yet"}),
+    el("p",{text:"Batches appear here as soon as MFG and expiry are entered during scanning."})));return}
+
+  const bk=el("div",{class:"bk"});
+  const mkCard=(key,label,qty,skus,lines,cls,note)=>el("button",{class:"bkc "+cls,"aria-pressed":String(S.bkFilter===key),
+    style:"border-top-color:var(--"+cls+"-line)",onclick(){S.bkFilter=key;render()}},
+    el("div",{class:"k",text:label}),el("div",{class:"v",text:fmt(qty)}),
+    el("div",{class:"d",text:fmt(skus)+" SKU · "+fmt(lines)+" batches"}),
+    el("div",{class:"d",text:note}));
+  bk.append(mkCard("all","All dated stock",rows.reduce((s,x)=>s+x.l.qty,0),
+    new Set(rows.map(x=>x.l.sku)).size,rows.length,"info","every batch"));
+  agg.list.forEach(b=>bk.append(mkCard(b.k,b.label,b.qty,b.skuCount,b.lines,b.cls,b.note)));
+  host.append(bk);
+  host.append(el("div",{class:"report-actions"},el("button",{class:"btn ghost",onclick(){download("SHELF-LIFE-REPORT.csv",toCsv(csvBrackets()))}},"Download Shelf Life Report")));
+
+  const sel=rows.filter(x=>S.bkFilter==="all"||x.L.bracket.k===S.bkFilter);
+  const m=new Map();
+  sel.forEach(x=>{const l=x.l,L=x.L;
+    const e=m.get(l.sku)||{sku:l.sku,qty:0,batches:0,shelves:new Set(),min:Infinity,max:-Infinity,who:new Set(),sys:0};
+    e.qty+=l.qty;e.batches++;e.shelves.add(l.shelf);
+    e.min=Math.min(e.min,L.pct);e.max=Math.max(e.max,L.pct);
+    if(l.byName)e.who.add(l.byName); m.set(l.sku,e);});
+  m.forEach((e,k)=>{e.sys=S.master.filter(r=>r.sku===k).reduce((s,r)=>s+r.qty,0)});
+  const list=[...m.values()].sort((a,b)=>a.min-b.min);
+  const bLabel=S.bkFilter==="all"?"All dated stock":BRACKETS.filter(b=>b.k===S.bkFilter)[0].label;
+
+  const card=el("div",{class:"card"});
+  card.append(el("h3",{text:"SKU-wise summary — "+bLabel+" ("+list.length+" SKU)"}));
+  const tb=el("tbody");
+  list.forEach(e=>tb.append(el("tr",{},
+    el("td",{class:"code"},el("button",{class:"btn ghost xs",onclick(){
+      S.searchQ=e.sku;S.view="search";render()}},e.sku)),
+    el("td",{class:"n",text:fmt(e.sys)}),
+    el("td",{class:"n",style:"font-weight:600",text:fmt(e.qty)}),
+    el("td",{class:"n",text:String(e.batches)}),
+    el("td",{class:"n",text:String(e.shelves.size)}),
+    el("td",{class:"n"},el("span",{class:"tag "+bracketOf(e.min).cls,text:e.min.toFixed(1)+"%"})),
+    el("td",{class:"n"},el("span",{class:"tag "+bracketOf(e.max).cls,text:e.max.toFixed(1)+"%"})),
+    el("td",{style:"min-width:120px"},el("div",{class:"bar"},
+      el("i",{class:bracketOf(e.min).cls,style:"width:"+Math.max(1,Math.min(100,e.min))+"%"}))),
+    el("td",{text:[...e.who].join(", ")||"—"}))));
+  card.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+    el("th",{text:"SKU"}),el("th",{class:"n",text:"System qty"}),el("th",{class:"n",text:"Counted qty"}),
+    el("th",{class:"n",text:"Batches"}),el("th",{class:"n",text:"Shelves"}),
+    el("th",{class:"n",text:"Worst life %"}),el("th",{class:"n",text:"Best life %"}),
+    el("th",{text:"Worst"}),el("th",{text:"Counted by"}))),tb)));
+  host.append(card);
+
+  const det=el("div",{class:"card"});
+  det.append(el("h3",{text:"Batch detail — "+bLabel}));
+  const dt=el("tbody");
+  sel.slice().sort((a,b)=>a.L.remDays-b.L.remDays).forEach(x=>{const l=x.l,L=x.L;
+    dt.append(el("tr",{},
+      el("td",{class:"code",text:l.shelf}),el("td",{class:"code",text:l.sku}),
+      el("td",{class:"code",text:l.batch||"—"}),el("td",{class:"n",text:fmt(l.qty)}),
+      el("td",{class:"code",text:l.mfg}),el("td",{class:"code",text:l.exp}),
+      el("td",{class:"n",text:L.totalMonths.toFixed(1)}),
+      el("td",{class:"n"},el("span",{class:"tag "+L.bracket.cls,text:L.pct.toFixed(1)+"%"})),
+      el("td",{class:"n",text:fmt(L.remDays)}),
+      el("td",{},el("span",{class:"tag "+L.bracket.cls,text:L.expired?"Expired":L.bracket.label})),
+      el("td",{text:l.byName||"—"})))});
+  det.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+    el("th",{text:"Shelf"}),el("th",{text:"SKU"}),el("th",{text:"Batch"}),el("th",{class:"n",text:"Qty"}),
+    el("th",{text:"MFG"}),el("th",{text:"Expiry"}),el("th",{class:"n",text:"Shelf life (mth)"}),
+    el("th",{class:"n",text:"Current life %"}),el("th",{class:"n",text:"Days left"}),
+    el("th",{text:"Bracket"}),el("th",{text:"Scanned by"}))),dt)));
+  host.append(det);
+  if(agg.undated) host.append(el("div",{class:"banner w",
+    text:agg.undated+" scan entries have no MFG/expiry, so they sit outside every bracket."}));
+}
+
+/*────── FINAL REPORT ──────*/
+function vSummary(host,t){
+  if(!S.master.length&&!S.lines.length){host.append(el("h2",{text:"Final report"}),noData("Nothing to report yet"));return}
+  host.append(el("h2",{text:S.cfg.job||"Final count report"}));
+  host.append(el("p",{class:"sub",text:"Prepared by "+(S.cfg.author||"—")+(S.cfg.site?" · "+S.cfg.site:"")+". Uploaded against counted, as things stand now."}));
+  cycleControl(host,t);
+  host.append(el("div",{class:"report-actions"},el("button",{class:"btn hv",onclick(){download("FINAL-CYCLE-COUNT-REPORT.csv",toCsv(csvFullReport()))}},"Download Full Report"),el("button",{class:"btn ghost",onclick(){download("FINAL-CYCLE-COUNT-REPORT.tsv",csvFullReport().map(r=>r.join("\t")).join("\n"))}},"Download Full Report (TSV)")));
+  const pctSku=t.skuTotal?t.skuCounted/t.skuTotal*100:0;
+  host.append(el("div",{class:"tiles"},
+    tile("Shelves completed",fmt(t.done)+"<small> / "+fmt(t.shelves)+"</small>",
+      fmt(t.part)+" running · "+fmt(t.pending)+" untouched","g"),
+    tile("SKU lines counted",fmt(t.skuCounted)+"<small> / "+fmt(t.skuTotal)+"</small>",
+      pctSku.toFixed(1)+"%"+(t.skuExtra?" · "+fmt(t.skuExtra)+" extra":""),"y"),
+    tile("Total system qty",fmt(t.sysQty),"uploaded","b"),
+    tile("Total scanned qty",fmt(t.cntQty),fmt(t.lines)+" entries","b"),
+    tile("Grand difference",sgn(t.diff),t.sysQty?(t.diff/t.sysQty*100).toFixed(2)+"% of book":"",t.diff?"r":"g"),
+    tile("Count accuracy",t.accuracy.toFixed(2)+"%","by quantity",t.accuracy>=99?"g":"y")));
+
+  const prog=el("div",{class:"card"});
+  prog.append(el("h3",{text:"Progress"}));
+  prog.append(hbars([
+    {k:"Shelves completed",v:t.shelves?t.done/t.shelves*100:0,d:(t.shelves?t.done/t.shelves*100:0).toFixed(1)+"%",cls:"ok"},
+    {k:"SKU lines counted",v:pctSku,d:pctSku.toFixed(1)+"%",cls:"info"},
+    {k:"Quantity counted vs uploaded",v:t.sysQty?Math.min(100,t.cntQty/t.sysQty*100):0,
+     d:(t.sysQty?t.cntQty/t.sysQty*100:0).toFixed(1)+"%",cls:"warn"}],100));
+  host.append(prog);
+
+  const byUser=new Map();
+  const visibleLines=userVisibleLines();
+  visibleLines.forEach(l=>{const k=l.byName||"—";const e=byUser.get(k)||{lines:0,qty:0,shelves:new Set(),skus:new Set()};
+    e.lines++;e.qty+=l.qty;e.shelves.add(l.shelf);e.skus.add(l.sku);byUser.set(k,e)});
+  const subBy=new Map();
+  Object.keys(S.shelfDone).forEach(k=>{const s=S.shelfDone[k];subBy.set(s.byName,(subBy.get(s.byName)||0)+1)});
+  if(byUser.size){
+    const uc=el("div",{class:"card"});uc.append(el("h3",{text:"Who counted what"}));
+    const ut=el("tbody");
+    [...byUser.entries()].sort((a,b)=>b[1].lines-a[1].lines).forEach(p=>{const n=p[0],e=p[1];
+      ut.append(el("tr",{},
+        el("td",{},el("span",{class:"av",style:"display:inline-grid;vertical-align:middle;margin-right:7px",text:initials(n)}),n),
+        el("td",{class:"n",text:fmt(e.lines)}),el("td",{class:"n",text:fmt(e.qty)}),
+        el("td",{class:"n",text:fmt(e.skus.size)}),el("td",{class:"n",text:fmt(e.shelves.size)}),
+        el("td",{class:"n",text:fmt(subBy.get(n)||0)})))});
+    uc.append(el("div",{class:"scroll"},el("table",{},el("thead",{},el("tr",{},
+      el("th",{text:"User"}),el("th",{class:"n",text:"Entries"}),el("th",{class:"n",text:"Qty scanned"}),
+      el("th",{class:"n",text:"SKU touched"}),el("th",{class:"n",text:"Shelves touched"}),
+      el("th",{class:"n",text:"Shelves submitted"}))),ut)));
+    host.append(uc);
+  }
+
+  const sc=el("div",{class:"card"});sc.append(el("h3",{text:"Bin-wise (shelf-wise) summary"}));
+  const stb=el("tbody");
+  t.stats.forEach(s=>stb.append(el("tr",{},
+    el("td",{},el("button",{class:"btn ghost xs",onclick(){S.activeShelf=s.shelf;S.view="scan";render()}},s.shelf)),
+    el("td",{class:"n",text:fmt(s.skuCounted)+" / "+fmt(s.skuTotal)}),
+    el("td",{class:"n",text:fmt(s.sysQty)}),el("td",{class:"n",text:s.lines?fmt(s.cntQty):"—"}),
+    el("td",{class:"n",style:s.diff&&s.lines?"color:var(--bad);font-weight:600":"",text:s.lines?sgn(s.diff):"—"}),
+    el("td",{class:"n",text:s.extraSku?fmt(s.extraSku):"—"}),
+    el("td",{text:s.by||"—"}),
+    el("td",{class:"code muted",text:s.sub?tstamp(s.sub.at):"—"}),
+    el("td",{},el("span",{class:"tag "+(s.state==="done"?"ok":s.state==="part"?"warn":"idle"),
+      text:s.state==="done"?"Completed":s.state==="part"?"In progress":"Pending"})))));
+  sc.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+    el("th",{text:"Shelf / bin"}),el("th",{class:"n",text:"SKU counted"}),el("th",{class:"n",text:"System qty"}),
+    el("th",{class:"n",text:"Physical qty"}),el("th",{class:"n",text:"Difference"}),
+    el("th",{class:"n",text:"Extra SKU"}),el("th",{text:"By"}),el("th",{text:"Submitted"}),
+    el("th",{text:"Status"}))),stb)));
+  host.append(sc);
+
+  const skuMap=new Map();
+  S.master.forEach(r=>{const e=skuMap.get(r.sku)||{sku:r.sku,desc:r.desc,sys:0,phy:0,shelves:new Set(),who:new Set(),n:0};
+    e.sys+=r.qty;if(!e.desc)e.desc=r.desc;e.shelves.add(r.shelf);skuMap.set(r.sku,e)});
+  S.lines.forEach(l=>{const e=skuMap.get(l.sku)||{sku:l.sku,desc:"",sys:0,phy:0,shelves:new Set(),who:new Set(),n:0,extra:true};
+    e.phy+=l.qty;e.n++;e.shelves.add(l.shelf);if(l.byName)e.who.add(l.byName);skuMap.set(l.sku,e)});
+  const skuList=[...skuMap.values()].map(e=>Object.assign({},e,{diff:e.phy-e.sys}))
+    .sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff));
+  const kc=el("div",{class:"card"});kc.append(el("h3",{text:"SKU-wise summary"}));
+  const kt=el("tbody");
+  skuList.forEach(e=>kt.append(el("tr",{},
+    el("td",{class:"code"},el("button",{class:"btn ghost xs",onclick(){S.searchQ=e.sku;S.view="search";render()}},e.sku),
+      e.extra?el("span",{class:"tag info",style:"margin-left:5px",text:"extra"}):null),
+    el("td",{text:e.desc||"—"}),el("td",{class:"n",text:fmt(e.shelves.size)}),
+    el("td",{class:"n",text:fmt(e.sys)}),el("td",{class:"n",text:e.n?fmt(e.phy):"—"}),
+    el("td",{class:"n",style:e.diff?"color:var(--bad);font-weight:600":"",text:e.n?sgn(e.diff):"—"}),
+    el("td",{text:[...e.who].join(", ")||"—"}),
+    el("td",{},el("span",{class:"tag "+(!e.n?"idle":e.diff===0?"ok":e.diff>0?"info":"bad"),
+      text:!e.n?"Not counted":e.diff===0?"Match":e.diff>0?"Over":"Short"})))));
+  kc.append(el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+    el("th",{text:"SKU"}),el("th",{text:"Description"}),el("th",{class:"n",text:"Shelves"}),
+    el("th",{class:"n",text:"Total system qty"}),el("th",{class:"n",text:"Total scanned qty"}),
+    el("th",{class:"n",text:"Difference"}),el("th",{text:"Counted by"}),el("th",{text:"Result"}))),kt)));
+  host.append(kc);
+}
+
+/*────── EXPORT ──────*/
+function vExport(host){
+  host.append(el("h2",{text:"Export and Google Sheets"}));
+  host.append(el("p",{class:"sub",text:"Download a CSV, or copy a block that pastes straight into a Google Sheets tab with the columns already lined up."}));
+  host.append(el("div",{class:"report-actions"},el("button",{class:"btn hv",onclick(){download("FINAL-CYCLE-COUNT-REPORT.csv",toCsv(csvFullReport()))}},"Download ALL Reports")));
+  host.append(el("div",{class:"banner",
+    text:"This page cannot write into Google Sheets by itself — the artifact sandbox blocks calls out to other sites. Copy or download here and paste into your tracker; it is one paste per tab."}));
+  const sets=[
+    {t:"Scan data (every entry)",d:"Shelf, SKU, batch, MFG, expiry, shelf life, current life % and days, qty, user, timestamp.",f:"scan-data.csv",g:csvScans},
+    {t:"Bin-wise summary",d:"One row per shelf: system vs physical, difference, who submitted it.",f:"bin-wise-summary.csv",g:csvBins},
+    {t:"SKU-wise summary",d:"One row per SKU across the whole warehouse, with its worst shelf-life bracket.",f:"sku-wise-summary.csv",g:csvSkus},
+    {t:"Shelf-life brackets",d:"Bracket totals plus the SKU-wise split inside each bracket.",f:"shelf-life-brackets.csv",g:csvBrackets},
+    {t:"User activity",d:"Per user: entries, quantity, SKUs and shelves submitted.",f:"user-activity.csv",g:csvUsers}
+  ];
+  sets.forEach(s=>{
+    const c=el("div",{class:"card"});
+    c.append(el("h3",{text:s.t}),el("p",{class:"sub",style:"margin-bottom:11px",text:s.d}));
+    const note=el("span",{class:"hint",style:"margin:0 0 0 6px"});
+    c.append(el("div",{class:"row"},
+      el("button",{class:"btn hv",onclick(){copyTsv(s.g(),note)}},"Copy for Sheets"),
+      el("button",{class:"btn ghost",onclick(){download(s.f,toCsv(s.g()))}},"Download CSV"),
+      el("button",{class:"btn ghost",onclick(){showRaw(c,s.g())}},"Show as text"),note));
+    host.append(c);
+  });
+  host.append(el("details",{class:"help"},el("summary",{text:"Suggested Google Sheets layout"}),
+    el("p",{text:"Make one spreadsheet with five tabs named Scan Data, Bin Summary, SKU Summary, Shelf Life, Users. Paste each block into cell A1 of its tab. Pasting again over the same range refreshes it, so charts and pivot tables keep pointing at the same cells."}),
+    el("p",{text:"If you want the sheet to update on its own instead of by paste, that needs a Google Apps Script web app plus a copy of this page hosted outside Claude. Ask and I will build that version."})));
+}
+function showRaw(card,grid){
+  const old=card.querySelector("textarea.raw"); if(old){old.remove();return}
+  const ta=el("textarea",{class:"raw",rows:"8",style:"margin-top:10px"});
+  ta.value=grid.map(r=>r.join("\t")).join("\n");
+  card.append(ta);ta.select();
+}
+async function copyTsv(grid,note){
+  const txt=grid.map(r=>r.map(c=>String(c==null?"":c)).join("\t")).join("\n");
+  try{ await navigator.clipboard.writeText(txt); note.className="hint ok";
+    note.textContent=(grid.length-1)+" rows copied — paste into A1"; toast("Copied for Sheets","good"); return }
+  catch(e){}
+  try{const ta=el("textarea",{style:"position:fixed;opacity:0"});ta.value=txt;document.body.append(ta);
+    ta.select();const ok=document.execCommand("copy");ta.remove();
+    if(ok){note.className="hint ok";note.textContent="Copied — paste into A1";toast("Copied","good");return}}catch(e){}
+  note.className="hint warn";note.textContent='Copy blocked — use "Show as text" and copy by hand';
+}
+async function download(filename,data){
+  if(!DL){toast("Downloads are not available here — use Copy for Sheets","err");return}
+  try{await DL.save({filename:filename,data:data});toast("Saved","good")}
+  catch(e){if(e&&e.code==="declined")return;toast("Could not save that file","err")}
+}
+const qc=v=>{const s=String(v==null?"":v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+const toCsv=g=>g.map(r=>r.map(qc).join(",")).join("\n");
+const hdr=()=>[["Report",S.cfg.job||"Stock count"],["Author",S.cfg.author||""],["Site",S.cfg.site||""],
+  ["Generated",new Date().toLocaleString("en-IN")],[]];
+function csvFullReport(){
+  const sections=[
+    ["FINAL CYCLE COUNT REPORT"],
+    ...csvBins(),[],
+    ["SKU SUMMARY"],...csvSkus(),[],
+    ["SHELF LIFE"],...csvBrackets(),[],
+    ["SCAN DATA"],...csvScans(),[],
+    ["USER ACTIVITY"],...csvUsers()
+  ];
+  return sections;
+}
+function csvScans(){
+  const rows=userVisibleLines();
+  const g=hdr().concat([["Category","Shelf","SKU","Description","Batch","MFG","Expiry","Shelf Life (months)","Current Shelf Life %","Current Shelf Life (days)","Bracket","Qty Scanned","System Qty (shelf+SKU)","Scanned By","Scanned At","Shelf Status"]]);
+  rows.forEach(l=>{const L=life(l.mfg,l.exp),sys=systemSkuQty(l.shelf,l.sku),d=(S.master.filter(r=>r.sku===l.sku&&r.desc)[0]||{}).desc||"";
+    g.push([categoryLabel(l.category||shelfCategory(l.shelf)),l.shelf,l.sku,d,l.batch||"",l.mfg||"",l.exp||"",L?L.totalMonths.toFixed(2):"",L?L.pct.toFixed(2):"",L?L.remDays:"",L?(L.expired?"Expired":L.bracket.label):"No dates",l.qty,sys,l.byName||l.lastByName||"",l.ts,isAdmin()&&S.shelfDone[l.shelf]?"Completed":S.shelfDone[l.shelf]&&S.shelfDone[l.shelf].by===S.me.id?"Completed":"Open"])});
+  return g;
+}
+function csvBins(){
+  const t=totals();
+  const g=hdr().concat([["Category","Shelf / Bin","SKU in System","SKU Counted","Extra SKU","System Qty","Physical Qty",
+    "Difference","Difference %","Entries","Status","Submitted By","Submitted At"]]);
+  t.stats.forEach(s=>g.push([categoryLabel(shelfCategory(s.shelf)),s.shelf,s.skuTotal,s.skuCounted,s.extraSku,s.sysQty,s.lines?s.cntQty:"",
+    s.lines?s.diff:"",s.sysQty?(s.diff/s.sysQty*100).toFixed(2):"",s.lines,
+    s.state==="done"?"Completed":s.state==="part"?"In progress":"Pending",
+    s.sub?s.sub.byName:"",s.sub?s.sub.at:""]));
+  g.push([]);
+  g.push(["TOTAL","","","",t.sysQty,t.cntQty,t.diff,
+    t.sysQty?(t.diff/t.sysQty*100).toFixed(2):"",t.lines,"Accuracy "+t.accuracy.toFixed(2)+"%"]);
+  return g;
+}
+function csvSkus(){
+  const m=new Map();
+  S.master.forEach(r=>{const e=m.get(r.sku)||{desc:r.desc,sys:0,phy:0,n:0,sh:new Set(),who:new Set(),worst:null};
+    e.sys+=r.qty;if(!e.desc)e.desc=r.desc;e.sh.add(r.shelf);m.set(r.sku,e)});
+  S.lines.forEach(l=>{const e=m.get(l.sku)||{desc:"",sys:0,phy:0,n:0,sh:new Set(),who:new Set(),worst:null};
+    e.phy+=l.qty;e.n++;e.sh.add(l.shelf);if(l.byName)e.who.add(l.byName);
+    const L=life(l.mfg,l.exp); if(L&&(e.worst===null||L.pct<e.worst))e.worst=L.pct;
+    m.set(l.sku,e)});
+  const g=hdr().concat([["SKU","Description","Shelves","Total System Qty","Total Scanned Qty","Difference",
+    "Difference %","Worst Life %","Bracket","Counted By","Result"]]);
+  [...m.entries()].sort((a,b)=>a[0]<b[0]?-1:1).forEach(p=>{const sku=p[0],e=p[1];
+    const d=e.phy-e.sys;
+    g.push([sku,e.desc,e.sh.size,e.sys,e.n?e.phy:"",e.n?d:"",
+      e.sys?(d/e.sys*100).toFixed(2):"", e.worst===null?"":e.worst.toFixed(2),
+      e.worst===null?"No dates":bracketOf(e.worst).label,[...e.who].join(" / "),
+      !e.n?"Not counted":d===0?"Match":d>0?"Over":"Short"])});
+  return g;
+}
+function csvBrackets(){
+  const a=bracketAgg();
+  const g=hdr().concat([["Bracket","Definition","SKU Count","Batches","Qty"]]);
+  a.list.forEach(b=>g.push([b.label,
+    b.max===Infinity?"pct >= "+b.min:(b.min===-Infinity?"pct < "+b.max:b.min+" <= pct < "+b.max),
+    b.skuCount,b.lines,b.qty]));
+  g.push(["No dates","MFG or expiry missing","",a.undated,a.undatedQty]);
+  g.push([]);
+  g.push(["Bracket","SKU","Description","Counted Qty","Batches","Shelves","Worst Life %","Days Left (worst)","Counted By"]);
+  BRACKETS.forEach(b=>{
+    const m=new Map();
+    S.lines.forEach(l=>{const L=life(l.mfg,l.exp);if(!L||L.bracket.k!==b.k)return;
+      const e=m.get(l.sku)||{qty:0,n:0,sh:new Set(),worst:Infinity,days:0,who:new Set()};
+      e.qty+=l.qty;e.n++;e.sh.add(l.shelf);if(L.pct<e.worst){e.worst=L.pct;e.days=L.remDays}
+      if(l.byName)e.who.add(l.byName);m.set(l.sku,e)});
+    [...m.entries()].sort((x,y)=>x[1].worst-y[1].worst).forEach(p=>{const sku=p[0],e=p[1];
+      const d=(S.master.filter(r=>r.sku===sku&&r.desc)[0]||{}).desc||"";
+      g.push([b.label,sku,d,e.qty,e.n,e.sh.size,e.worst.toFixed(2),e.days,[...e.who].join(" / ")])});
+  });
+  return g;
+}
+function csvUsers(){
+  const lines=userVisibleLines();
+  const users=isAdmin()?S.users:S.users.filter(u=>u.id===S.me.id),m=new Map();
+  lines.forEach(l=>{const k=l.byName||l.lastByName||"—";const e=m.get(k)||{n:0,q:0,sh:new Set(),sk:new Set(),first:l.ts,last:l.ts};e.n++;e.q+=l.qty;e.sh.add(l.shelf);e.sk.add(l.sku);if(l.ts<e.first)e.first=l.ts;if(l.ts>e.last)e.last=l.ts;m.set(k,e)});
+  const g=hdr().concat([["User","Role","Entries","Qty Scanned","SKU Touched","Shelves Touched","Shelves Submitted","First Scan","Last Scan"]]);
+  users.forEach(u=>{const e=m.get(u.name)||{n:0,q:0,sh:new Set(),sk:new Set(),first:"",last:""};const submitted=Object.keys(S.shelfDone).filter(s=>S.shelfDone[s].by===u.id);g.push([u.name,u.role,e.n,e.q,e.sk.size,e.sh.size,submitted.length,e.first,e.last])});return g;
+}
+/*────── CLOUD SYNC ──────*/
+function vCloud(host){
+  host.append(el("h2",{text:"Google Sheets sync"}));
+  host.append(el("p",{class:"sub",text:"Link this app to a Google Apps Script web app. Every scan then lands in your spreadsheet, and the auto-mailer sends the report from there at a fixed time."}));
+
+  if(SANDBOX){
+    host.append(el("div",{class:"banner w",
+      text:"You are running the copy hosted inside Claude, which is not allowed to call other websites. Put the index.html file on GitHub Pages and open that link — the same settings below will work there."}));
+  }
+
+  const c=el("div",{class:"card"});
+  c.append(el("h3",{text:"Connection"}));
+  const url=el("input",{value:S.cloud.url,placeholder:"https://script.google.com/macros/s/AKfy…/exec",
+    oninput(e){S.cloud.url=e.target.value.trim();snap()}});
+  const key=el("input",{value:S.cloud.key,placeholder:"the SECRET you set in Code.gs",
+    oninput(e){S.cloud.key=e.target.value.trim();snap()}});
+  const auto=el("select",{onchange(e){S.cloud.auto=e.target.value==="on";snap()}},
+    el("option",{value:"on",selected:S.cloud.auto?"selected":null},"On — push a few seconds after each change"),
+    el("option",{value:"off",selected:!S.cloud.auto?"selected":null},"Off — only when I press Send now"));
+  c.append(el("label",{class:"f"},el("span",{text:"Web app URL (ends in /exec)"}),url),
+    el("label",{class:"f",style:"margin-top:10px"},el("span",{text:"Shared secret"}),key),
+    el("label",{class:"f",style:"margin-top:10px"},el("span",{text:"Automatic sending"}),auto));
+  const st=el("p",{class:"hint"});
+  c.append(el("div",{class:"row",style:"margin-top:12px"},
+    el("button",{class:"btn ghost",async onclick(){
+      st.className="hint";st.textContent="Testing…";
+      try{const j=await cloudPing();st.className="hint ok";
+        st.textContent="Connected — spreadsheet: "+(j.sheet||"linked");render()}
+      catch(e){st.className="hint bad";st.textContent=e.message}}},"Test connection"),
+    el("button",{class:"btn hv",async onclick(){
+      st.className="hint";st.textContent="Sending…";
+      try{await cloudPush(false)}catch(e){st.className="hint bad";st.textContent=e.message}}},"Send now"),
+    el("button",{class:"btn ghost",async onclick(){
+      if(!confirm("Pull the count from the sheet?\n\nWhat is on this device is replaced by what is stored there."))return;
+      st.className="hint";st.textContent="Pulling…";
+      try{await cloudPull();toast("Pulled from Google","good");render()}
+      catch(e){st.className="hint bad";st.textContent=e.message}}},"Pull from sheet")),st);
+  if(S.cloud.err) c.append(el("p",{class:"hint bad",text:"Last error: "+S.cloud.err}));
+  host.append(c);
+
+  host.append(el("div",{class:"tiles"},
+    tile("Link status",S.cloud.url?(S.cloud.err?"Error":"Linked"):"Not set",
+      S.cloud.url?"web app configured":"paste the /exec URL",S.cloud.err?"r":S.cloud.url?"g":""),
+    tile("Last sent",S.cloud.lastPush?tstamp(S.cloud.lastPush):"—","scan data to Sheets","b"),
+    tile("Last pulled",S.cloud.lastPull?tstamp(S.cloud.lastPull):"—","count restored from Sheets","b"),
+    tile("Auto send",S.cloud.auto?"On":"Off",S.cloud.auto?"a few seconds after each change":"manual only",
+      S.cloud.auto?"g":"y")));
+
+  host.append(el("div",{class:"card"},el("h3",{text:"What lands in the spreadsheet"}),
+    el("p",{class:"sub",style:"margin-bottom:8px",text:"Each push rebuilds five tabs so your charts and pivots keep pointing at the same cells:"}),
+    el("ul",{style:"margin:0;padding-left:20px;color:var(--ink-2)"},
+      el("li",{text:"Scan Data — every entry with shelf life, current life % and days, and the user who scanned it"}),
+      el("li",{text:"Bin Summary — shelf-wise system vs physical and who submitted it"}),
+      el("li",{text:"SKU Summary — SKU-wise totals across the warehouse"}),
+      el("li",{text:"Shelf Life — the four brackets plus the SKU split inside each"}),
+      el("li",{text:"Users — per-user entries, quantity and shelves submitted"})),
+    el("p",{class:"hint",text:"A sixth tab, Mail List, is where you put the email IDs that get the scheduled report."})));
+
+  host.append(el("details",{class:"help"},el("summary",{text:"Setup in short"}),
+    el("p",{html:"1. New Google Sheet → Extensions → Apps Script → paste <code>Code.gs</code> → set your own <code>SECRET</code>."}),
+    el("p",{html:"2. Deploy → New deployment → Web app → Execute as <b>Me</b>, Access <b>Anyone</b> → copy the <code>/exec</code> URL into the box above."}),
+    el("p",{html:"3. Put <code>index.html</code> in a GitHub repo → Settings → Pages → Deploy from branch → <code>main</code> / root. Your link becomes <code>https://&lt;user&gt;.github.io/&lt;repo&gt;/</code>."}),
+    el("p",{html:"4. In the sheet's <b>Mail List</b> tab add the email IDs, then run <code>installDailyTrigger</code> once to schedule the mail."}),
+    el("p",{text:"The full walkthrough is in SETUP-GUIDE.md alongside the files."})));
+}
+
+function vUsers(host){
+  host.append(el("h2",{text:"Users and access"}));
+  host.append(el("p",{class:"sub",text:"Every scan records the user who made it. Operators can edit or delete only their own entries; an admin can change anything."}));
+  host.append(el("div",{class:"banner w",
+    text:"These accounts label work and limit edits inside the app. They are not a security wall — anyone the artifact is shared with can still open it."}));
+
+  const c=el("div",{class:"card"});
+  c.append(el("h3",{text:"Add a user"}));
+  const n=el("input",{placeholder:"Full name"}),u=el("input",{placeholder:"username",autocapitalize:"off"});
+  const p=el("input",{type:"password",placeholder:"password"});
+  const r=el("select",{},el("option",{value:"operator"},"Operator — scans and counts"),
+    el("option",{value:"admin"},"Admin — full control"));
+  const err=el("p",{class:"hint bad"});
+  c.append(el("div",{class:"oner",style:"grid-template-columns:repeat(auto-fit,minmax(170px,1fr))"},
+    el("label",{class:"f"},el("span",{text:"Full name"}),n),
+    el("label",{class:"f"},el("span",{text:"Username"}),u),
+    el("label",{class:"f"},el("span",{text:"Password"}),p),
+    el("label",{class:"f"},el("span",{text:"Role"}),r),
+    el("button",{class:"btn hv",style:"height:38px",async onclick(){
+      try{const x=await createUser(n.value,u.value,p.value,r.value);
+        toast(x.name+" added","good");render()}catch(e){err.textContent=e.message}}},"Create user")),err);
+  host.append(c);
+
+  const act=new Map();
+  S.lines.forEach(l=>{const e=act.get(l.by)||{n:0,q:0,sh:new Set(),last:""};
+    e.n++;e.q+=l.qty;e.sh.add(l.shelf);if(l.ts>e.last)e.last=l.ts;act.set(l.by,e)});
+  const sub=new Map();
+  Object.keys(S.shelfDone).forEach(k=>{const s=S.shelfDone[k];sub.set(s.by,(sub.get(s.by)||0)+1)});
+
+  const tb=el("tbody");
+  S.users.forEach(usr=>{
+    const a=act.get(usr.id)||{n:0,q:0,sh:new Set(),last:""};
+    tb.append(el("tr",{},
+      el("td",{},el("span",{class:"av",style:"display:inline-grid;vertical-align:middle;margin-right:8px",text:initials(usr.name)}),
+        usr.name,usr.id===S.me.id?el("span",{class:"tag idle",style:"margin-left:6px",text:"you"}):null),
+      el("td",{class:"code",text:usr.username}),
+      el("td",{},el("span",{class:"tag "+(usr.role==="admin"?"info":"idle"),text:usr.role==="admin"?"Admin":"Operator"})),
+      el("td",{class:"n",text:fmt(a.n)}),el("td",{class:"n",text:fmt(a.q)}),
+      el("td",{class:"n",text:fmt(a.sh.size)}),el("td",{class:"n",text:fmt(sub.get(usr.id)||0)}),
+      el("td",{class:"code muted",text:a.last?tstamp(a.last):"—"}),
+      el("td",{class:"nowrap"},[
+        el("button",{class:"btn ghost xs",style:"margin-right:4px",async onclick(){
+          const pw=prompt("New password for "+usr.name+" (min 4 characters)");
+          if(pw===null)return; if(String(pw).length<4){toast("Too short","err");return}
+          usr.h=await hash(pw);save("users");toast("Password reset","good")}},"Reset password"),
+        usr.id!==S.me.id?el("button",{class:"btn ghost xs",style:"margin-right:4px",onclick(){
+          usr.role=usr.role==="admin"?"operator":"admin";save("users");
+          toast(usr.name+" is now "+usr.role);render()}},
+          usr.role==="admin"?"Make operator":"Make admin"):null,
+        usr.id!==S.me.id?el("button",{class:"btn ghost xs",onclick(){
+          if(!confirm("Remove "+usr.name+"?\n\nTheir "+a.n+" scan entries stay in the count with their name on them."))return;
+          S.users=S.users.filter(x=>x.id!==usr.id);save("users");toast("User removed");render()}},"Remove"):null
+      ])));
+  });
+  host.append(el("div",{class:"card"},el("h3",{text:"Team ("+S.users.length+")"}),
+    el("div",{class:"scroll"},el("table",{},el("thead",{},el("tr",{},
+      el("th",{text:"Name"}),el("th",{text:"Username"}),el("th",{text:"Role"}),
+      el("th",{class:"n",text:"Entries"}),el("th",{class:"n",text:"Qty scanned"}),
+      el("th",{class:"n",text:"Shelves touched"}),el("th",{class:"n",text:"Shelves submitted"}),
+      el("th",{text:"Last activity"}),el("th",{text:"Manage"}))),tb))));
+
+  const sd=Object.keys(S.shelfDone);
+  if(sd.length){
+    const t2=el("tbody");
+    sd.map(k=>[k,S.shelfDone[k]]).sort((a,b)=>String(b[1].at||"").localeCompare(String(a[1].at||"")))
+      .forEach(p=>{const sh=p[0],v=p[1],s=shelfStat(sh);
+        t2.append(el("tr",{},el("td",{class:"code",text:sh}),el("td",{text:v.byName||"—"}),
+          el("td",{class:"code muted",text:tstamp(v.at)}),el("td",{class:"n",text:fmt(s.cntQty)}),
+          el("td",{class:"n",style:s.diff?"color:var(--bad);font-weight:600":"",text:sgn(s.diff)}),
+          el("td",{},el("span",{class:"tag ok",text:"Completed"}))))});
+    host.append(el("div",{class:"card"},el("h3",{text:"Shelf submission trail"}),
+      el("div",{class:"scroll cap"},el("table",{},el("thead",{},el("tr",{},
+        el("th",{text:"Shelf"}),el("th",{text:"Submitted by"}),el("th",{text:"When"}),
+        el("th",{class:"n",text:"Physical qty"}),el("th",{class:"n",text:"Difference"}),
+        el("th",{text:"Status"}))),t2))));
+  }
+}
+
+window.addEventListener("beforeunload",snap);
+render(); boot().then(()=>startCloudPolling()).catch(()=>{});
+</script>
+</body>
+</html>
